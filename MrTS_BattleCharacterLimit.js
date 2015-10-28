@@ -46,8 +46,8 @@
 
 	var maxCharacters = Number(parameters['Max Characters'] || 5);
 	var charasPerRow = Number(parameters['Characters Per Row'] || 3);
-	var rightOffset = Number(parameters['Offset'] || 360);
-	var topOffset = Number(parameters['Vertical Offset'] || 120);
+	var rightOffset = Number(parameters['Offset'] || 120);
+	var topOffset = Number(parameters['Vertical Offset'] || 360);
 	var lowerCharaIndex = Number(parameters['Lower Index'] || 48);
 	var forwardIndex = Number(parameters['Forward Offset'] || 100);
 	var rowSpacing = Number(parameters['Row Spacing'] || 100);
