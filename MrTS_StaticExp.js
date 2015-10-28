@@ -79,9 +79,7 @@
 		$gameParty.allMembers().forEach(function(member){
 			t_exp[i] = 0;
 			$gameTroop.deadMembers().forEach(function(enemy){
-				console.log("calc");
 				var dif = (enemy.enemy().meta.level ? enemy.enemy().meta.level : 1) - member.level;
-				console.log(dif);
 				var exp = enemy.exp();
 				if (dif > 0)
 					exp += expBonus * dif;
@@ -89,7 +87,6 @@
 					exp += expLoss * dif;
 
 				if (exp < 0) exp = 0;
-				console.log(exp);
 				t_exp[i] += exp;
 
 			});
