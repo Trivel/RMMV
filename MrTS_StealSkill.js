@@ -3,7 +3,7 @@
 //==============================================================================
 
 /*:
-* @plugindesc Adds postfixes to damage dealt.
+* @plugindesc Allows to steal items from enemies.
 * @author Mr. Trivel
 * * 
 * @help Version 1.0
