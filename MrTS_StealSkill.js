@@ -6,7 +6,7 @@
 * @plugindesc Allows to steal items from enemies.
 * @author Mr. Trivel
 * * 
-* @help Version 1.0
+* @help Version 1.01
 * Free for non-commercial use.
 *
 * Skill note fields:
@@ -54,6 +54,7 @@
 			{
 				var regex = /<steal:[ ]*([wai])+,[ ]*(\d+),[ ]*(\d+[.]*\d*),[ ]*(\d+)>/i;
 				var match = regex.exec(note[i]);
+				if (!match) continue;
 
 				if (match[1] && match[2] && match[3] && match[4])
 				{
