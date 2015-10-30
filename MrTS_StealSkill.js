@@ -43,6 +43,8 @@
 * Player will have 30% chance to get potion, 20% to get sword
 * and 1% to get Doom Skill.
 *
+* ## Note Fields
+* 
 * Skill note fields:
 * <steal> - Add this to a skill that allows to steal.
 *
