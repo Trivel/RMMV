@@ -11,7 +11,7 @@
 * @default 1
 * 
 * @help Free for commercial and non-commercial use.
-* Version 1.0
+* Version 1.1
 */
 
 (function() {
@@ -22,6 +22,6 @@
 
 	Game_Action.prototype.makeDamageValue = function(target, critical) {
 		var value = _Game_Action_makeDamageValue.call(this, target, critical);
-		return Math.max(value, minDamage);
+		return (value >= 0 ? Math.max(value, minDamage) : value);
 	};
 })();
