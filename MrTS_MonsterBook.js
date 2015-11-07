@@ -7,24 +7,19 @@
 * information about enemies like resistances, description, drops.
 * @author Mr. Trivel
 *
+* @param [General]
+* @default 
+* 
 * @param Is In Menu
 * @desc Can Monster Book be accessed from menu?
 * 1 - Yes, 0 - No
 * @default 1
-*
-* @param List Side
-* @desc On which side should the list and picture be displayed?
-* LEFT - left side, RIGHT - right side.
-* @default RIGHT
 *
 * @param Show Data
 * @desc When to reveal enemy entry in Monster Book.
 * 0 - No Default Means, 1 - On Killing, 2 - On Encounter
 * @default 1
 *
-* @param -----------------
-* @default 
-* 
 * @param Command Name
 * @desc Monster Book command name in the menu.
 * @default Monster Book
@@ -33,35 +28,21 @@
 * @desc How unknown entry names should be displayed?
 * @default ???????
 *
-* @param Currency Text
-* @desc What name to use for Currency in Monster Book?
-* @default Gold
+* @param  
+* @default 
+* 
+* @param [Layout - General]
+* @default
 *
-* @param Item Drops Text
-* @desc What name to use for Item Drops in Monster Book?
-* @default Drops
+* @param List Side
+* @desc On which side should the list and picture be displayed?
+* LEFT - left side, RIGHT - right side.
+* @default RIGHT
 *
-* @param Parameters Text
-* @desc What name to use for Parameters in Monster Book?
-* @default Stats
-*
-* @param Resistances Text
-* @desc What name to use for Resistances in Monster Book?
-* @default Defences
-*
-* @param Attacks Text
-* @desc What name to use for Attacks in Monster Book?
-* @default Attacks
-*
-* @param Rewards Text
-* @desc What name to use for Rewards in Monster Book?
-* @default Rewards
-*
-* @param Description Text
-* @desc What name to use for Description in Monster Book?
-* @default Description
-*
-* @param -----------------
+* @param  
+* @default
+* 
+* @param [Layout - Top]
 * @default
 * 
 * @param Top Panel1 Data
@@ -79,7 +60,10 @@
 * PARAMETERS, RESISTANCES, SKILLS, NONE
 * @default SKILLS
 *
-* @param -----------------
+* @param  
+* @default
+* 
+* @param [Layout - Bottom]
 * @default
 * 
 * @param Bottom Panel1 Data
@@ -96,6 +80,91 @@
 * @desc Which data should be displayed in Panel 3 (right one)?
 * REWARDS, DESCRIPTION, NONE
 * @default NONE
+*
+* @param  
+* @default
+* 
+* @param [Panel Configuration]
+* @default 
+*
+* @param [Top - Parameters]
+* @default
+*
+* @param Parameters Text
+* @desc What name to use for Parameters in Monster Book?
+* @default Stats
+*
+* @param Parameters Mode
+* @desc SHOW only parameters listed below? Or HIDE only parameters
+* listed below?
+* @default HIDE
+*
+* @param Parameters List
+* @desc Parameters to show or hide.
+* E.g. 1 2 5 6 9
+* @default 6 7
+*
+* @param  
+* @default
+* 
+* @param [Top - Resistances]
+* @default
+*
+* @param Resistances Text
+* @desc What name to use for Resistances in Monster Book?
+* @default Defences
+*
+* @param Element Mode
+* @desc SHOW only elements listed below? Or HIDE only elements
+* listed below?
+* @default HIDE
+*
+* @param Element List
+* @desc Elements to show or hide.
+* E.g. 1 2 5 6 9
+* @default 1 9
+*
+* @param  
+* @default
+*
+* @param [Top - Attacks]
+* @default 
+*
+* @param Attacks Text
+* @desc What name to use for Attacks in Monster Book?
+* @default Attacks
+*
+* @param
+* @default 
+* 
+* @param [Bottom - Rewards]
+* @default
+*
+* @param Rewards Text
+* @desc What name to use for Rewards in Monster Book?
+* @default Rewards
+*
+* @param Currency Text
+* @desc What name to use for Currency in Monster Book?
+* @default Gold
+*
+* @param Item Drops Text
+* @desc What name to use for Item Drops in Monster Book?
+* @default Drops
+* 
+* @param  
+* @default
+* 
+* @param [Bottom - Description]
+* @default
+*
+* @param Description Text
+* @desc What name to use for Description in Monster Book?
+* @default Description
+*
+* @param Description Font Size
+* @desc Size of the font for description.
+* @default 28
 * 
 * @help Version 1.0
 * Free for non commercial use.
@@ -128,18 +197,14 @@
 	
 	var parameters = PluginManager.parameters('MrTS_MonsterBook');
 
+	// General
 	var isInMenu = Number(parameters['Is In Menu'] || 1);
-	var monsterBookSide = String(parameters['List Side'] || "RIGHT");
+	var revealOnKill = Number(parameters['Show Data'] || 1);
 	var monsterBookCommandText = String(parameters['Command Name'] || "Monster Book");
 	var unknownText = String(parameters['Unknown Enemy'] || "???????");
-	var currencyText = String(parameters['Currency Text'] || "Gold");
-	var itemDropsText = String(parameters['Item Drops Text'] || "Drops");
-	var revealOnKill = Number(parameters['Show Data'] || 1);
-	var paramsText = String(parameters['Parameters Text'] || "Stats");
-	var resistancesText = String(parameters['Resistances Text'] || "Resistances");
-	var attacksText = String(parameters['Attacks Text'] || "Attacks");
-	var rewardsText = String(parameters['Rewards Text'] || "Rewards");
-	var descriptionText = String(parameters['Description Text'] || "Description");
+
+	// Layout configuration
+	var monsterBookSide = String(parameters['List Side'] || "RIGHT");
 
 	var topPanel1 = String(parameters['Top Panel1 Data'] || "PARAMETERS");
 	var topPanel2 = String(parameters['Top Panel2 Data'] || "RESISTANCES");
@@ -148,6 +213,30 @@
 	var bottomPanel1 = String(parameters['Bottom Panel1 Data'] || "REWARDS");
 	var bottomPanel2 = String(parameters['Bottom Panel2 Data'] || "DESCRIPTION");
 	var bottomPanel3 = String(parameters['Bottom Panel3 Data'] || "NONE");
+
+	// Panel Configuration
+	// 
+	// Parameters
+	var paramsText = String(parameters['Parameters Text'] || "Stats");
+	var paramsMode = String(parameters['Parameters Mode'] || "HIDE");
+	var paramsList = String(parameters['Parameters List'] || "6 7");
+	
+	// Resistances
+	var resistancesText = String(parameters['Resistances Text'] || "Resistances");
+	var elementMode = String(parameters['Element Mode'] || "HIDE");
+	var elementList = String(parameters['Element List'] || "1 9");
+	
+	// Attacks
+	var attacksText = String(parameters['Attacks Text'] || "Attacks");
+	
+	// Drops
+	var rewardsText = String(parameters['Rewards Text'] || "Rewards");
+	var itemDropsText = String(parameters['Item Drops Text'] || "Drops");
+	var currencyText = String(parameters['Currency Text'] || "Gold");
+	
+	// Desription
+	var descriptionText = String(parameters['Description Text'] || "Description");
+	var descFontSize = Number(parameters['Description Font Size'] || 28);	
 
 	//--------------------------------------------------------------------------
 	// Game_Interpreter
@@ -375,7 +464,9 @@
 
 		this.makeFontBigger();
 		this.drawText(descriptionText, rect.x+5, rect.y+10, rect.width);
-		this.makeFontSmaller();
+		
+		var df = this.contents.fontSize;
+		this.contents.fontSize = descFontSize;
 
 		var desc;
 
@@ -390,10 +481,12 @@
 		for (var i = 0; i < desc.length; i++)
 		{
 			var x = rect.x + 30;
-			var h = rect.y+60+this.lineHeight()*i;
+			var h = rect.y+60+descFontSize*i;
 			var w = rect.width;
 			this.drawText(desc[i], x, h, w, 'left');
 		}
+		
+		this.contents.fontSize = df;
 	};
 
 	Window_MonsterInfo.prototype.drawParametersTopPanel = function(rect)
@@ -404,15 +497,22 @@
 		this.drawText(paramsText, rect.x+5, rect.y+5, rect.width);
 		this.makeFontSmaller();
 
+		var list = paramsList.split(" ");
+		var x = rect.x + 30;
+		var h = rect.y+60;
+		var w = rect.width;
+
 		for (var i = 0; i < enemy.params.length; i++)
 		{
-			var x = rect.x + 30;
-			var h = rect.y+60+this.lineHeight()*i;
-			var w = rect.width;
+			if (elementMode == "HIDE" && list.contains(String(i))) continue;
+			if (elementMode == "SHOW" && !list.contains(String(i))) continue;
+
 			this.changeTextColor(this.systemColor());
 			this.drawText(TextManager.param(i), x, h, w, 'left');
 			this.resetTextColor();
 			this.drawText(enemy.params[i], x, h, w, 'right');
+
+			h += this.lineHeight();
 		}
 	};
 
@@ -432,11 +532,16 @@
 				resArray[enemy.traits[i].dataId] = enemy.traits[i].value;
 		}
 
+		var list = elementList.split(" ");
+		var x = rect.x + 30;
+		var h = rect.y+60;
+		var w = rect.width;
+
 		for (var i = 1; i < $dataSystem.elements.length; i++)
 		{
-			var x = rect.x + 30;
-			var h = rect.y+60+this.lineHeight()*(i-1);
-			var w = rect.width;
+			if (elementMode == "HIDE" && list.contains(String(i))) continue;
+			if (elementMode == "SHOW" && !list.contains(String(i))) continue;
+
 			this.changeTextColor(this.systemColor());
 			this.drawText($dataSystem.elements[i], x, h, w, 'left');
 			this.resetTextColor();
@@ -452,6 +557,7 @@
 			}
 			else
 				this.drawText("100%", x, h, w, 'right');
+			h += this.lineHeight();
 		}
 	};
 
