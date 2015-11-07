@@ -20,6 +20,11 @@
 * 0 - No Default Means, 1 - On Killing, 2 - On Encounter
 * @default 1
 *
+* @param Show All Entries
+* @desc Show entries up to highest discovered enemy or all?
+* 1 - Highest discovered, 2 - all
+* @default 1
+*
 * @param Command Name
 * @desc Monster Book command name in the menu.
 * @default Monster Book
@@ -200,6 +205,7 @@
 	// General
 	var isInMenu = Number(parameters['Is In Menu'] || 1);
 	var revealOnKill = Number(parameters['Show Data'] || 1);
+	var showEntriesMode = Number(parameters['Show All Entries'] || 1);
 	var monsterBookCommandText = String(parameters['Command Name'] || "Monster Book");
 	var unknownText = String(parameters['Unknown Enemy'] || "???????");
 
@@ -735,7 +741,13 @@
 	};
 
 	Window_MonsterList.prototype.maxItems = function() {
-		return $dataEnemies.length-1-this.hiddenEnemies.length;
+		switch (showEntriesMode)
+		{
+			case 1:
+				return $gameSystem.highestId()-this.indexPlus($gameSystem.highestId());
+			case 2:
+				return $dataEnemies.length-1-this.hiddenEnemies.length;
+		}
 	};
 
 	Window_MonsterList.prototype.drawItem = function(index) {
@@ -781,6 +793,11 @@
 	Game_System.prototype.initialize = function() {
 		_GameSystem_initialize.call(this);
 		this._monsterBookEnabled = true;
+		this._highestKnownEnemy = 1;
+	};
+
+	Game_System.prototype.highestId = function() {
+		return this._highestKnownEnemy;
 	};
 
 	Game_System.prototype.isMonsterBookEnabled = function() {
@@ -812,26 +829,20 @@
 	Game_System.prototype.monsterBookClear = function() {
 		this._monsterBook = [];
 		this._monsterBookItems = {};
+		this._highestKnownEnemy = 1;
 	};
 
 	Game_System.prototype.monsterBookFill = function() {
 		this.monsterBookClear();
 		for (var i = 1; i < $dataEnemies.length; i++)
-		{
-			this._monsterBook[i] = true;
-			this._monsterBookItems[i] = [];
-			for (var j = 0; j < $dataEnemies[i].dropItems.length; j++)
-			{
-				var item = $dataEnemies[i].dropItems[j];
-				this._monsterBookItems[i].push({id: item.dataId, kind: item.kind});
-			}
-		}
+			$gameSystem.monsterBookDiscover(i, true);
 	};
 
 	Game_System.prototype.monsterBookDiscover = function(_id, itemsToo) {
 		if (!this._monsterBook) this.monsterBookClear();
 		if (!this._monsterBookItems[_id]) this._monsterBookItems[_id] = [];
 		this._monsterBook[_id] = true;
+		if (_id > this._highestKnownEnemy) this._highestKnownEnemy = _id;
 
 		if (!itemsToo) return;
 		for (var j = 0; j < $dataEnemies[_id].dropItems.length; j++)
