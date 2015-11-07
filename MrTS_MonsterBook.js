@@ -166,7 +166,7 @@
 * @desc Size of the font for description.
 * @default 28
 * 
-* @help Version 1.0
+* @help Version 1.1
 * Free for non commercial use.
 *
 * Enemy note fields:
@@ -485,7 +485,7 @@
 			var w = rect.width;
 			this.drawText(desc[i], x, h, w, 'left');
 		}
-		
+
 		this.contents.fontSize = df;
 	};
 
