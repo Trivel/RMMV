@@ -39,6 +39,7 @@
 * @default 54
 * 
 * @help Version 1.1
+Free for commercial and non-commercial use.
 */
 
 (function() {
