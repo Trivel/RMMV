@@ -33,14 +33,20 @@
 */
 
 (function() {
+
+	var parameters = PluginManager.parameters('MrTS_RandomSkillPosition');
+	var paramHBounds = Number(parameters['Horizontal Bounds'] || 1.0);
+	var paramVBounds = Number(parameters['Vertical Bounds'] || 1.0);
+	
+
 	var _SpriteAnimation_setup = Sprite_Animation.prototype.setup;
 	Sprite_Animation.prototype.setup = function(target, animation, mirror, delay) {
 	    _SpriteAnimation_setup.call(this, target, animation, mirror, delay);
 	    if ((target._battler && target._battler._randomSkillPos) ||
 	    	(target.parent._battler && target.parent._battler._randomSkillPos))
 	    {
-	    	var w_bounds = 1.0;
-	    	var h_bounds = 1.0;
+	    	var w_bounds = paramHBounds;
+	    	var h_bounds = paramVBounds;
 	    	var tw = target.width * w_bounds;
 	    	var th = target.height * h_bounds;
 		    this._offset.x = Math.randomInt(tw) - tw/2;
