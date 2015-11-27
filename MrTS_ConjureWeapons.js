@@ -9,7 +9,7 @@
 * @help 
 * --------------------------------------------------------------------------------
 * Free for non commercial use.
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 ** 
 * --------------------------------------------------------------------------------
@@ -23,6 +23,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Bug fix.
 * 1.0 - Release
 */
 
@@ -38,7 +39,9 @@
 	Game_Actor.prototype.conjureWeapon = function(item, timer) {
 		if (this._equips[0]._itemId != item.id)
 		{
-			this._originalWeapon = this._equips[0]._itemId;
+			if (this._originalWeapon === 0)
+				this._originalWeapon = this._equips[0]._itemId;
+
 			this._conjureWeaponTimer = timer;
 			this._conjuredWeapon = true;
 		    this._equips[0].setObject(item);
