@@ -360,8 +360,7 @@
 	var _SpriteCharacter_updateCharacterFrame = Sprite_Character.prototype.updateCharacterFrame;
 	Sprite_Character.prototype.updateCharacterFrame = function() {
 		_SpriteCharacter_updateCharacterFrame.call(this);
-		
-		if (this._cutOff == true)
+		if (this._cutOff)
 		{
 			if (this._bushDepth > 0) {
 				this._lowerBody.height -= this._sunk;
@@ -387,7 +386,7 @@
 	Sprite_Character.prototype.updateOther = function() {
 		_SpriteCharacter_updateOther.call(this);
 		this._sunk = this._character._sunk;	
-		this._cutOff = (this._character.cutOffBody() == true);
+		this._cutOff = (this._character.cutOffBody() == "true");
 	};
 
 	//-----------------------------------------------------------------------------
