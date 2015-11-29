@@ -53,7 +53,7 @@
 * Version History
 * --------------------------------------------------------------------------------
 * 1.1 - Added Pictures above event heads.
-*       Added Picture and Names changing when even switches pages.
+*       Added Picture and Names changing when event switches pages.
 * 1.0 - Release
 */
 
