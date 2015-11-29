@@ -19,7 +19,7 @@
 * @help 
 * --------------------------------------------------------------------------------
 * Free for non commercial use.
-* Version 1.1
+* Version 1.2
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -52,6 +52,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.2 - Bug fix
 * 1.1 - Added Pictures above event heads.
 *       Added Picture and Names changing when event switches pages.
 * 1.0 - Release
@@ -94,7 +95,14 @@
 	};
 
 	Game_Event.prototype.updateOverheadData = function() {
-		this._overheadPageIndex = this._pageIndex;		
+		this._overheadPageIndex = this._pageIndex;
+		if (this.event().meta.Name || this.event().meta.Picture) return;
+
+		var dataName = "";
+		var dataPicture = "";
+		var dataNameRange = 0;
+		var dataPictureRange = 0;
+
 		if (this.list())
 	    {
 	    	for (action of this.list())
@@ -104,19 +112,24 @@
 	    			var matchName = regexEventName.exec(a);
 	    			if (matchName)
 	    			{
-	    				this._displayEventName = matchName[1];
-	    				this._displayEventRange = Number(matchName[2]);
+	    				dataName = matchName[1];
+	    				dataNameRange = Number(matchName[2]);
 	    			}
 
 	    			var matchPicture = regexPictureName.exec(a);
 	    			if (matchPicture)
 	    			{
-	    				this._displayPictureName = matchPicture[1];
-	    				this._displayPictureRange = Number(matchPicture[2]);
+	    				dataPicture = matchPicture[1];
+	    				dataPictureRange = matchPicture[2];
 	    			}
 	    		} 
 	    	}
 	    }
+
+	    this._displayEventName = dataName;
+		this._displayEventRange = dataNameRange;
+		this._displayPictureName = dataPicture;
+		this._displayPictureRange = dataPictureRange;
 	};
 
 	var _GameEvent_update = Game_Event.prototype.update;
@@ -145,18 +158,33 @@
 
 	Sprite_Character.prototype.updateName = function() {
         this._currentEventName = this._character._displayEventName;
-
-		this._spriteEventName.bitmap = new Bitmap(200, 60);
-        this._spriteEventName.bitmap.fontSize = paramFontSize;
-        var nameWidth = this._spriteEventName.bitmap.measureTextWidth(this._character._displayEventName);
-        this._spriteEventName.bitmap = new Bitmap(nameWidth+40, paramFontSize+10);
-        this._spriteEventName.bitmap.fontSize = paramFontSize;
-        this._spriteEventName.bitmap.drawText(this._character._displayEventName, 0, 0, nameWidth+40, paramFontSize+10, 'center');
+        if (this._currentEventName == "")
+        	this.removeName();
+        else
+        {
+			this._spriteEventName.bitmap = new Bitmap(200, 60);
+	        this._spriteEventName.bitmap.fontSize = paramFontSize;
+	        var nameWidth = this._spriteEventName.bitmap.measureTextWidth(this._character._displayEventName);
+	        this._spriteEventName.bitmap = new Bitmap(nameWidth+40, paramFontSize+10);
+	        this._spriteEventName.bitmap.fontSize = paramFontSize;
+	        this._spriteEventName.bitmap.drawText(this._character._displayEventName, 0, 0, nameWidth+40, paramFontSize+10, 'center');
+	    }
 	};
 
 	Sprite_Character.prototype.updatePicture = function() {
         this._currentPictureName = this._character._displayPictureName;
-		this._spriteEventPicture.bitmap = ImageManager.loadSystem(this._character._displayPictureName);
+        if (this._currentPictureName == "")
+        	this.removePicture();
+        else
+			this._spriteEventPicture.bitmap = ImageManager.loadSystem(this._character._displayPictureName);
+	};
+
+	Sprite_Character.prototype.removeName = function() {
+		if (this._spriteEventName.bitmap) this._spriteEventName.bitmap.clear();
+	};
+
+	Sprite_Character.prototype.removePicture = function () {
+		if (this._spriteEventPicture.bitmap) this._spriteEventPicture.bitmap.clear();
 	};
 
 	var _SpriteCharacter_update = Sprite_Character.prototype.update;
@@ -192,7 +220,6 @@
 	Sprite_Character.prototype.updateOverheadData = function() {
 		if (this._character._displayEventName && this._character._displayEventName != this._currentEventName)
 			this.updateName();
-		
 
 		if (this._character._displayPictureName && this._character._displayPictureName != this._currentPictureName)
 			this.updatePicture();
