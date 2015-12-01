@@ -19,7 +19,7 @@
 * @help 
 * --------------------------------------------------------------------------------
 * Free for non commercial use.
-* Version 1.2
+* Version 1.3
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -52,6 +52,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.3 - Crash fix
 * 1.2 - Bug fix
 * 1.1 - Added Pictures above event heads.
 *       Added Picture and Names changing when event switches pages.
@@ -96,7 +97,7 @@
 
 	Game_Event.prototype.updateOverheadData = function() {
 		this._overheadPageIndex = this._pageIndex;
-		if (this.event().meta.Name || this.event().meta.Picture) return;
+		if (!this.page() || this.event().meta.Name || this.event().meta.Picture) return;
 
 		var dataName = "";
 		var dataPicture = "";
