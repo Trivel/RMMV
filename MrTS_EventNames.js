@@ -15,11 +15,26 @@
 * @desc Font size for event's name.
 * Default: 24
 * @default 24
+*
+* @param Fade Names
+* @desc Should event names have a fade effect? True/False
+* Default: False
+* @default False
+*
+* @param Fade Pictures
+* @desc Should event pictures have a fade effect? True/False
+* Default: False
+* @default False
+*
+* @param Fade Timer
+* @desc How quickly should pictures and names fade? In frames. 60 = 1s
+* Default: 30
+* @default 30
 * 
 * @help 
 * --------------------------------------------------------------------------------
 * Free for non commercial use.
-* Version 1.3
+* Version 1.4
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -47,11 +62,12 @@
 * <Picture:NAME, RANGE>
 * NAME - picture name (Picture located in img\system)
 * RANGE - how close player has to be to see the event's picture
-*
 * 
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.4 - Added Fade in and Fade out effects for event names and pictures.
+*     - Fixed layering of pictures and names. They're properly above now.
 * 1.3 - Crash fix
 * 1.2 - Bug fix
 * 1.1 - Added Pictures above event heads.
@@ -68,6 +84,9 @@
 
 	var paramDefaultRange 	= Number(parameters['Default Range'] || 5);
 	var paramFontSize		= Number(parameters['Font Size'] || 24);
+	var paramFadeNames		= Boolean(parameters['Fade Names'] && parameters['Fade Names'].toLowerCase() === "true" || false);
+	var paramFadePictures	= Boolean(parameters['Fade Pictures'] && parameters['Fade Pictures'].toLowerCase() === "true" || false);
+	var paramFadeTimer		= Number(parameters['Fade Timer'] || 30);
 
 	var regexEventName = /<name:[ ]*(.*),[ ]*(\d+)>/i;
 	var regexPictureName = /<picture:[ ]*(.*),[ ]*(\d+)>/i;
@@ -148,13 +167,8 @@
 	var _SpriteCharacter_initialize = Sprite_Character.prototype.initialize;
 	Sprite_Character.prototype.initialize = function(character) {
 		_SpriteCharacter_initialize.call(this, character);
-        this._spriteEventName = new Sprite();
-        this.updateName();
-        this.addChild(this._spriteEventName);
 
-    	this._spriteEventPicture = new Sprite();
-        this.updatePicture();
-    	this.addChild(this._spriteEventPicture);	    
+    	this._npAdded = false;
 	};
 
 	Sprite_Character.prototype.updateName = function() {
@@ -191,39 +205,89 @@
 	var _SpriteCharacter_update = Sprite_Character.prototype.update;
 	Sprite_Character.prototype.update = function() {
 		_SpriteCharacter_update.call(this);
-		this.updateOverheadPosition();
 		this.updateOverheadData();
+		this.updateOverheadPosition();
 	};
 
 	Sprite_Character.prototype.updateOverheadPosition = function() {
 	    if (this._spriteEventName) {
-		    this._spriteEventName.x = -this._spriteEventName.width/2;
-	        this._spriteEventName.y = -this._spriteEventName.height/2 - 12 - this._frame.height;
-    		this._spriteEventName.z = 5;
+		    this._spriteEventName.x = this.x -this._spriteEventName.width/2;
+		    this._spriteEventName.y = this.y -this._spriteEventName.height/2 - 12 - this._frame.height;
     		if (this._character._displayEventRange < Math.abs(($gamePlayer.x - this._character.x)) + Math.abs(($gamePlayer.y - this._character.y)))
     		{
-    			this._spriteEventName.visible = false;
+    			if (paramFadeNames)
+    			{
+	    			if (this._spriteEventName.opacity !== 0)
+	    			{
+	    				this._spriteEventName.opacity -= 255/paramFadeTimer;
+	    				if (this._spriteEventName.opacity < 0) this._spriteEventName.opacity = 0;
+	    			}
+	    		}
+	    		else this._spriteEventName.visible = false;
     		}
-    		else this._spriteEventName.visible = true;
+    		else {
+    			if (paramFadeNames)
+    			{
+	    			if (this._spriteEventName.opacity !== 255)
+	    			{
+	    				this._spriteEventName.opacity += 255/paramFadeTimer;
+	    				if (this._spriteEventName.opacity > 255) this._spriteEventName.opacity = 255;
+	    			}
+	    		}
+	    		else this._spriteEventName.visible = true;
+    		}
 	    }
 	    if (this._spriteEventPicture) {
-	    	this._spriteEventPicture.x = -this._spriteEventPicture.width/2;
-	        this._spriteEventPicture.y = -this._spriteEventPicture.height/2 - 12 - this._frame.height;
-    		this._spriteEventPicture.z = 5;
+	    	this._spriteEventPicture.x = this.x-this._spriteEventPicture.width/2;
+	        this._spriteEventPicture.y = this.y-this._spriteEventPicture.height/2 - 12 - this._frame.height;
     		if (this._character._displayPictureRange < Math.abs(($gamePlayer.x - this._character.x)) + Math.abs(($gamePlayer.y - this._character.y)))
     		{
-    			this._spriteEventPicture.visible = false;
+    			if (paramFadePictures)
+    			{
+    				if (this._spriteEventPicture.opacity !== 0)
+    				{
+    					this._spriteEventPicture.opacity -= 255/paramFadeTimer;
+    					if (this._spriteEventPicture.opacity < 0) this._spriteEventPicture.opacity = 0;
+    				}
+    			}
+    			else this._spriteEventPicture.visible = false;
     		}
-    		else this._spriteEventPicture.visible = true;
+    		else {
+    			if (paramFadePictures)
+    			{
+    				if (this._spriteEventPicture.opacity !== 255)
+    				{
+    					this._spriteEventPicture.opacity += 255/paramFadeTimer;
+    					if (this._spriteEventPicture.opacity > 255) this._spriteEventPicture.opacity = 255;
+    				}
+    			}
+    			else this._spriteEventPicture.visible = true;
+    		} 
 	    }
 	};
 
 	Sprite_Character.prototype.updateOverheadData = function() {
+		if (!this._npAdded)
+		{
+			this._npAdded = true;
+			this._spriteEventName = new Sprite();
+	    	this._spriteEventPicture = new Sprite();
+
+	    	this._spriteEventName.z = 7;
+	    	this._spriteEventPicture.z = 7;
+
+	        this.updatePicture();
+	        this.updateName();
+	        this.parent.addChild(this._spriteEventName);
+	    	this.parent.addChild(this._spriteEventPicture);
+		}
+
 		if (this._character._displayEventName && this._character._displayEventName != this._currentEventName)
 			this.updateName();
 
 		if (this._character._displayPictureName && this._character._displayPictureName != this._currentPictureName)
 			this.updatePicture();
 	};
+		
 
 })();
