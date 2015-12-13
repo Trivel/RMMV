@@ -70,6 +70,11 @@ Imported.MrTS_SalvageItems = true;
 * </Salvage>
 * 
 * --------------------------------------------------------------------------------
+* Plugin Commands
+* --------------------------------------------------------------------------------
+* SalvageScene - Calls Salvaging Scene.
+* 
+* --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
 * 1.0 - Release
@@ -88,6 +93,18 @@ Imported.MrTS_SalvageItems = true;
 	var regexStart = /<salvage>/i;
 	var regexEnd = /<\/salvage>/i;
 	var regexItem = /([iaw])[ ]+(\d+)[ ]+(\d+)[ ]*(\d+[.]*\d*)/i;
+
+	//--------------------------------------------------------------------------
+	// Game_Interpreter
+	// 
+
+	var _GameInterpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
+	Game_Interpreter.prototype.pluginCommand = function(command, args) {
+		_GameInterpreter_pluginCommand.call(this, command, args);
+		if (command === 'SalvageScene') {
+			SceneManager.push(Scene_Salvage);
+		}
+	};
 
 	//--------------------------------------------------------------------------
 	// Scene_Salvage
