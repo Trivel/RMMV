@@ -16,29 +16,24 @@
 * Default: 24
 * @default 24
 *
-* @param Fade Names
-* @desc Should event names have a fade effect? True/False
-* Default: False
-* @default False
-*
-* @param Fade Pictures
-* @desc Should event pictures have a fade effect? True/False
-* Default: False
-* @default False
+* @param Fade
+* @desc Should event names/pictures/icons have a fade effect? True/False
+* Default: True
+* @default True
 *
 * @param Fade Timer
-* @desc How quickly should pictures and names fade? In frames. 60 = 1s
+* @desc How quickly should fade happen? In frames. 60 = 1s
 * Default: 30
 * @default 30
 * 
 * @help 
 * --------------------------------------------------------------------------------
 * Free for non commercial use.
-* Version 1.4
+* Version 1.5
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
-* Event Comment Commands 
+* Event Comment Commands or Event Note Field
 * --------------------------------------------------------------------------------
 * Displays a name or picture according to page the event is in.
 * Use "Comment..." command under Flow Control for these tags.
@@ -50,22 +45,14 @@
 * <Picture: NAME, RANGE>
 * NAME - Picture Name (Picture located in img\system)
 * RANGE - How close player has to be to see the event's picture above it.
-* --------------------------------------------------------------------------------
-* Event Note Fields
-* --------------------------------------------------------------------------------
-* Displays a permanent name above event's head:
-* <Name:NAME, RANGE>
-* NAME - event name
-* RANGE - how close player has to be to see the event name above it.
 *
-* Displays a permanent picture above event's head:
-* <Picture:NAME, RANGE>
-* NAME - picture name (Picture located in img\system)
-* RANGE - how close player has to be to see the event's picture
-* 
+* <Icon: ID, RANGE>
+* ID - Icon Index (You can check that in database when selecting icons)
+* RANGE - How close player has to be to see the event's icon above it.
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.5 - Added Icon drawing, cleaned up the code.
 * 1.4 - Added Fade in and Fade out effects for event names and pictures.
 *     - Fixed layering of pictures and names. They're properly above now.
 * 1.3 - Crash fix
@@ -84,12 +71,12 @@
 
 	var paramDefaultRange 	= Number(parameters['Default Range'] || 5);
 	var paramFontSize		= Number(parameters['Font Size'] || 24);
-	var paramFadeNames		= Boolean(parameters['Fade Names'] && parameters['Fade Names'].toLowerCase() === "true" || false);
-	var paramFadePictures	= Boolean(parameters['Fade Pictures'] && parameters['Fade Pictures'].toLowerCase() === "true" || false);
+	var paramFade		= Boolean(parameters['Fade'] && parameters['Fade'].toLowerCase() !== "false" || true);
 	var paramFadeTimer		= Number(parameters['Fade Timer'] || 30);
 
-	var regexEventName = /<name:[ ]*(.*),[ ]*(\d+)>/i;
-	var regexPictureName = /<picture:[ ]*(.*),[ ]*(\d+)>/i;
+	var regexEventName = /<(name):[ ]*(.*),[ ]*(\d+)>/i;
+	var regexPictureName = /<(picture):[ ]*(.*),[ ]*(\d+)>/i;
+	var regexIconName = /<(icon):[ ]*(.*),[ ]*(\d+)>/i
 
 	//-----------------------------------------------------------------------------
 	// Game_Event
@@ -98,30 +85,37 @@
 	var _GameEvent_initialize = Game_Event.prototype.initialize;
 	Game_Event.prototype.initialize = function(mapId, eventId) {
 		_GameEvent_initialize.call(this, mapId, eventId);
-		if (this.event().meta.Name)
-	    {
-	        var nameMeta = this.event().meta.Name.split(",");
-	        this._displayEventName = nameMeta[0];
-	        this._displayEventRange = Number(nameMeta[1]) === 0 ? paramDefaultRange : Number(nameMeta[1]);
+	    var meta = this.event().meta;
+	    this._displayOverheadType = null;
+	    var nameMeta = null;
+	    if (meta.Icon) { 
+	    	this._displayOverheadType = "icon" 
+	    	nameMeta = meta.Icon.split(","); 
 	    }
-	    if (this.event().meta.Picture)
+	    else if (meta.Picture) { 
+	    	this._displayOverheadType = "picture" 
+	    	nameMeta = meta.Picture.split(","); 
+	    }
+	    else if (meta.Name) { 
+	    	this._displayOverheadType = "name" 
+	    	nameMeta = meta.Name.split(","); 
+	    }
+	    if (nameMeta)
 	    {
-	    	var pictureMeta = this.event().meta.Picture.split(",");
-	    	if (pictureMeta[0][0] == " ") pictureMeta[0] = pictureMeta[0].substring(1);
-	    	this._displayPictureName = pictureMeta[0];
-	    	this._displayPictureRange = Number(pictureMeta[1]) === 0 ? paramDefaultRange : Number(pictureMeta[1]);
+	    	if (nameMeta[0][0] == " ") nameMeta[0] = nameMeta[0].substring(1);
+	    	this._displayOverheadName = nameMeta[0];
+	    	this._displayOverheadRange = Number(nameMeta[1]) === 0 ? paramDefaultRange : Number(nameMeta[1]);	    	
 	    }
 	    this.updateOverheadData();
 	};
 
 	Game_Event.prototype.updateOverheadData = function() {
 		this._overheadPageIndex = this._pageIndex;
-		if (!this.page() || this.event().meta.Name || this.event().meta.Picture) return;
+		if (!this.page() || this.event().meta.Name || this.event().meta.Picture || this.event().meta.Icon) return;
 
-		var dataName = "";
-		var dataPicture = "";
-		var dataNameRange = 0;
-		var dataPictureRange = 0;
+		var overheadType = null;
+		var overheadName = "";
+		var overheadRange = 0;
 
 		if (this.list())
 	    {
@@ -129,27 +123,21 @@
 	    	{
 	    		if (action.code == "108") {
 	    			var a = action.parameters[0];
-	    			var matchName = regexEventName.exec(a);
-	    			if (matchName)
+	    			var match = regexEventName.exec(a);
+	    			if (!match) match = regexPictureName.exec(a);
+	    			if (!match) match = regexIconName.exec(a);
+	    			if (match)
 	    			{
-	    				dataName = matchName[1];
-	    				dataNameRange = Number(matchName[2]);
-	    			}
-
-	    			var matchPicture = regexPictureName.exec(a);
-	    			if (matchPicture)
-	    			{
-	    				dataPicture = matchPicture[1];
-	    				dataPictureRange = matchPicture[2];
-	    			}
+	    				overheadType = match[1].toLowerCase();
+	    				overheadName = match[2];
+	    				overheadRange = Number(match[3]);
+	    			} 
 	    		} 
 	    	}
 	    }
-
-	    this._displayEventName = dataName;
-		this._displayEventRange = dataNameRange;
-		this._displayPictureName = dataPicture;
-		this._displayPictureRange = dataPictureRange;
+	    this._displayOverheadType = overheadType;
+	    this._displayOverheadName = overheadName;
+	    this._displayOverheadRange = overheadRange;
 	};
 
 	var _GameEvent_update = Game_Event.prototype.update;
@@ -171,35 +159,46 @@
     	this._npAdded = false;
 	};
 
-	Sprite_Character.prototype.updateName = function() {
-        this._currentEventName = this._character._displayEventName;
-        if (this._currentEventName == "")
-        	this.removeName();
-        else
-        {
-			this._spriteEventName.bitmap = new Bitmap(200, 60);
-	        this._spriteEventName.bitmap.fontSize = paramFontSize;
-	        var nameWidth = this._spriteEventName.bitmap.measureTextWidth(this._character._displayEventName);
-	        this._spriteEventName.bitmap = new Bitmap(nameWidth+40, paramFontSize+10);
-	        this._spriteEventName.bitmap.fontSize = paramFontSize;
-	        this._spriteEventName.bitmap.drawText(this._character._displayEventName, 0, 0, nameWidth+40, paramFontSize+10, 'center');
-	    }
+	Sprite_Character.prototype.updateOverhead = function() {
+		this._currentOverheadType = this._character._displayOverheadType;
+		this._currentOverheadName = this._character._displayOverheadName;
+		this._currentOverheadRange = this._character._displayOverheadRange;
+		if(!this._currentOverheadType)
+			this.removeOverhead()
+		else
+		{
+			switch (this._currentOverheadType)
+			{
+				case "name":
+				{
+					this._spriteOverhead.bitmap = new Bitmap(200, 60);
+			        this._spriteOverhead.bitmap.fontSize = paramFontSize;
+			        var nameWidth = this._spriteOverhead.bitmap.measureTextWidth(this._currentOverheadName);
+			        this._spriteOverhead.bitmap = new Bitmap(nameWidth+40, paramFontSize+10);
+			        this._spriteOverhead.bitmap.fontSize = paramFontSize;
+			        this._spriteOverhead.bitmap.drawText(this._currentOverheadName, 0, 0, nameWidth+40, paramFontSize+10, 'center');
+				} break;
+				case "picture":
+				{
+					this._spriteOverhead.bitmap = ImageManager.loadSystem(this._currentOverheadName);
+				} break;
+				case "icon":
+				{
+					var icons = ImageManager.loadSystem('IconSet');
+					var index = Number(this._currentOverheadName);
+				    var pw = Window_Base._iconWidth;
+				    var ph = Window_Base._iconHeight;
+				    var sx = index % 16 * pw;
+				    var sy = Math.floor(index / 16) * ph;
+					this._spriteOverhead.bitmap = new Bitmap(pw, ph);
+					this._spriteOverhead.bitmap.blt(icons, sx, sy, pw, ph, 0, 0);
+				} break;
+			}
+		}
 	};
 
-	Sprite_Character.prototype.updatePicture = function() {
-        this._currentPictureName = this._character._displayPictureName;
-        if (this._currentPictureName == "")
-        	this.removePicture();
-        else
-			this._spriteEventPicture.bitmap = ImageManager.loadSystem(this._character._displayPictureName);
-	};
-
-	Sprite_Character.prototype.removeName = function() {
-		if (this._spriteEventName.bitmap) this._spriteEventName.bitmap.clear();
-	};
-
-	Sprite_Character.prototype.removePicture = function () {
-		if (this._spriteEventPicture.bitmap) this._spriteEventPicture.bitmap.clear();
+	Sprite_Character.prototype.removeOverhead = function() {
+		if (this._spriteOverhead.bitmap) this._spriteOverhead.bitmap.clear();
 	};
 
 	var _SpriteCharacter_update = Sprite_Character.prototype.update;
@@ -210,59 +209,32 @@
 	};
 
 	Sprite_Character.prototype.updateOverheadPosition = function() {
-	    if (this._spriteEventName) {
-		    this._spriteEventName.x = this.x -this._spriteEventName.width/2;
-		    this._spriteEventName.y = this.y -this._spriteEventName.height/2 - 12 - this._frame.height;
-    		if (this._character._displayEventRange < Math.abs(($gamePlayer.x - this._character.x)) + Math.abs(($gamePlayer.y - this._character.y)))
+	    if (this._spriteOverhead) {
+		    this._spriteOverhead.x = this.x -this._spriteOverhead.width/2;
+		    this._spriteOverhead.y = this.y -this._spriteOverhead.height/2 - 12 - this._frame.height;
+    		if (this._character._displayOverheadRange < Math.abs(($gamePlayer.x - this._character.x)) + Math.abs(($gamePlayer.y - this._character.y)))
     		{
-    			if (paramFadeNames)
+    			if (paramFade)
     			{
-	    			if (this._spriteEventName.opacity !== 0)
+	    			if (this._spriteOverhead.opacity !== 0)
 	    			{
-	    				this._spriteEventName.opacity -= 255/paramFadeTimer;
-	    				if (this._spriteEventName.opacity < 0) this._spriteEventName.opacity = 0;
+	    				this._spriteOverhead.opacity -= 255/paramFadeTimer;
+	    				if (this._spriteOverhead.opacity < 0) this._spriteOverhead.opacity = 0;
 	    			}
 	    		}
-	    		else this._spriteEventName.visible = false;
+	    		else this._spriteOverhead.visible = false;
     		}
     		else {
-    			if (paramFadeNames)
+    			if (paramFade)
     			{
-	    			if (this._spriteEventName.opacity !== 255)
+	    			if (this._spriteOverhead.opacity !== 255)
 	    			{
-	    				this._spriteEventName.opacity += 255/paramFadeTimer;
-	    				if (this._spriteEventName.opacity > 255) this._spriteEventName.opacity = 255;
+	    				this._spriteOverhead.opacity += 255/paramFadeTimer;
+	    				if (this._spriteOverhead.opacity > 255) this._spriteOverhead.opacity = 255;
 	    			}
 	    		}
-	    		else this._spriteEventName.visible = true;
+	    		else this._spriteOverhead.visible = true;
     		}
-	    }
-	    if (this._spriteEventPicture) {
-	    	this._spriteEventPicture.x = this.x-this._spriteEventPicture.width/2;
-	        this._spriteEventPicture.y = this.y-this._spriteEventPicture.height/2 - 12 - this._frame.height;
-    		if (this._character._displayPictureRange < Math.abs(($gamePlayer.x - this._character.x)) + Math.abs(($gamePlayer.y - this._character.y)))
-    		{
-    			if (paramFadePictures)
-    			{
-    				if (this._spriteEventPicture.opacity !== 0)
-    				{
-    					this._spriteEventPicture.opacity -= 255/paramFadeTimer;
-    					if (this._spriteEventPicture.opacity < 0) this._spriteEventPicture.opacity = 0;
-    				}
-    			}
-    			else this._spriteEventPicture.visible = false;
-    		}
-    		else {
-    			if (paramFadePictures)
-    			{
-    				if (this._spriteEventPicture.opacity !== 255)
-    				{
-    					this._spriteEventPicture.opacity += 255/paramFadeTimer;
-    					if (this._spriteEventPicture.opacity > 255) this._spriteEventPicture.opacity = 255;
-    				}
-    			}
-    			else this._spriteEventPicture.visible = true;
-    		} 
 	    }
 	};
 
@@ -270,23 +242,18 @@
 		if (!this._npAdded)
 		{
 			this._npAdded = true;
-			this._spriteEventName = new Sprite();
-	    	this._spriteEventPicture = new Sprite();
+			this._spriteOverhead = new Sprite();
 
-	    	this._spriteEventName.z = 7;
-	    	this._spriteEventPicture.z = 7;
+	    	this._spriteOverhead.z = 7;
 
-	        this.updatePicture();
-	        this.updateName();
-	        this.parent.addChild(this._spriteEventName);
-	    	this.parent.addChild(this._spriteEventPicture);
+	        this.updateOverhead();
+	        this.parent.addChild(this._spriteOverhead);
 		}
 
-		if (this._character._displayEventName && this._character._displayEventName != this._currentEventName)
-			this.updateName();
-
-		if (this._character._displayPictureName && this._character._displayPictureName != this._currentPictureName)
-			this.updatePicture();
+		if ((this._character._displayOverheadType && this._character._displayOverheadType != this._currentOverheadType) || 
+			(this._character._displayOverheadName && this._character._displayOverheadName != this._currentOverheadName) || 
+			(this._character._displayOverheadRange && this._character._displayOverheadRange != this._currentOverheadRange))
+			this.updateOverhead();
 	};
 		
 
