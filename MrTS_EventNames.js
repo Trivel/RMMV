@@ -35,8 +35,10 @@
 * --------------------------------------------------------------------------------
 * Event Comment Commands or Event Note Field
 * --------------------------------------------------------------------------------
-* Displays a name or picture according to page the event is in.
-* Use "Comment..." command under Flow Control for these tags.
+* - If tag is in comment, it'll display according to event's page.
+* Use "Comment..." command under Flow Control for those tags.
+* 
+* - If tag is in Event Note Field, it'll be permanent there no matter the page.
 *
 * <Name: NAME, RANGE>
 * NAME - Event Name
