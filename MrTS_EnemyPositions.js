@@ -22,7 +22,7 @@
 * Use following tags inside enemy note fields. In case of multiple tags - tag at
 * random will be picked.
 * <Position: [X] [Y]>
-* E.g.: <Position: 500, 200>
+* E.g.: <Position: 500 200>
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
