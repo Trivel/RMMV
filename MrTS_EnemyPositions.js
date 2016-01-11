@@ -12,7 +12,7 @@
 * 
 * @help 
 * --------------------------------------------------------------------------------
-* Free for commerical and non commercial use.
+* Free for commercial and non commercial use.
 * Version 1.0
 * --------------------------------------------------------------------------------
 *
