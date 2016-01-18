@@ -9,7 +9,7 @@
 * @help 
 * --------------------------------------------------------------------------------
 * Free for non commercial use.
-* Version 1.1
+* Version 1.2
 * --------------------------------------------------------------------------------
 ** 
 * --------------------------------------------------------------------------------
@@ -21,14 +21,13 @@
 * [SFX] - SFX name
 * [VOL] - Volume
 * [PITCH] - Pitch
-*
-* 
 * 
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
-* 1.1 - Picking a random sound if multiple tags are on the same enemy.
 * 1.0 - Release
+* 1.1 - Picking a random sound if multiple tags are on the same enemy.
+* 1.2 - Crash fix when attacking enemies/actors without hurt notes
 */
 
 (function() {
@@ -63,7 +62,7 @@
 	var _GameAction_executeDamage = Game_Action.prototype.executeDamage;
 	Game_Action.prototype.executeDamage = function(target, value) {
 		_GameAction_executeDamage.call(this, target, value);
-		if (value > 0 && target._hurtSounds)
+		if (value > 0 && target._hurtSounds.length > 0)
 		{
 			var sound = AudioManager.makeEmptyAudioObject();
 			var randomHurtSound = target._hurtSounds[Math.floor(Math.random()*target._hurtSounds.length)];
