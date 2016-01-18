@@ -9,21 +9,25 @@
 * @help 
 * --------------------------------------------------------------------------------
 * Free for non commercial use.
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 ** 
 * --------------------------------------------------------------------------------
 * Actor/Enemy Tags
 * --------------------------------------------------------------------------------
-* <Hurt:[SFX], [VOL], [PITCH]>
-* Place it in note field of actor or enemy. Note there's no space after :
+* Place the following tag into Actor or Enemy note field. You can place multiple
+* tags on same enemy - in that case a random sound from those will be picked.
+* <Hurt: [SFX], [VOL], [PITCH]>
 * [SFX] - SFX name
 * [VOL] - Volume
 * [PITCH] - Pitch
+*
+* 
 * 
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Picking a random sound if multiple tags are on the same enemy.
 * 1.0 - Release
 */
 
@@ -31,34 +35,41 @@
 	var _GameActor_setup = Game_Actor.prototype.setup;
 	Game_Actor.prototype.setup = function(actorId) {
 		_GameActor_setup.call(this, actorId);
-		if (this.actor().meta.Hurt)
-		{
-			this._hurtSound = this.actor().meta.Hurt.split(',');
-			this._hurtSound[1] = Number(this._hurtSound[1]);
-			this._hurtSound[2] = Number(this._hurtSound[2]);
-		}
+		this._hurtSounds = this.parseHurtSounds(this.actor().note);
 	};
 
 	var _GameEnemy_setup = Game_Enemy.prototype.setup;
 	Game_Enemy.prototype.setup = function(enemyId, x, y) {
 		_GameEnemy_setup.call(this, enemyId, x, y);
-		if (this.enemy().meta.Hurt)
-		{
-			this._hurtSound = this.enemy().meta.Hurt.split(',');
-			this._hurtSound[1] = Number(this._hurtSound[1]);
-			this._hurtSound[2] = Number(this._hurtSound[2]);
-		}
+		this._hurtSounds = this.parseHurtSounds(this.enemy().note);
+	};
+
+	Game_Battler.prototype.parseHurtSounds = function(note) {
+		var lines = note.split(/[\r\n]/);
+		var regex = /<Hurt:[ ]*(.+),[ ]*(\d+),[ ]*(\d+)>/i;
+		var results = [];
+
+		for (var i = 0; i < lines.length; i++) {
+			var regexMatch = regex.exec(lines[i]);
+			if (regexMatch)
+			{
+				results.push([regexMatch[1], Number(regexMatch[2]), Number(regexMatch[3])]);
+			}
+		};
+
+		return results;
 	};
 
 	var _GameAction_executeDamage = Game_Action.prototype.executeDamage;
 	Game_Action.prototype.executeDamage = function(target, value) {
 		_GameAction_executeDamage.call(this, target, value);
-		if (value > 0 && target._hurtSound)
+		if (value > 0 && target._hurtSounds)
 		{
 			var sound = AudioManager.makeEmptyAudioObject();
-			sound.name = target._hurtSound[0];
-			sound.volume = target._hurtSound[1];
-			sound.pitch = target._hurtSound[2];
+			var randomHurtSound = target._hurtSounds[Math.floor(Math.random()*target._hurtSounds.length)];
+			sound.name = randomHurtSound[0];
+			sound.volume = randomHurtSound[1];
+			sound.pitch = randomHurtSound[2];
 			AudioManager.loadStaticSe(sound);
 			AudioManager.playStaticSe(sound);
 		}
