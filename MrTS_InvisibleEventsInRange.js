@@ -46,7 +46,7 @@
 
 (function() {
 	var parameters = PluginManager.parameters('MrTS_InvisibleEventsInRange');
-	var paramAppearGradually = String(parameters['Appear Gradually'] || "true").toLowerCase();
+	var paramAppearGradually = String(parameters['Appear Gradually'] || "true").toLowerCase() === "true";
 	var paramAppearTime = Number(parameters['Appear Time'] || 20);
 
 	var regexEventHidden = /<hidden:[ ]*(\S+)[ ]+(\d+)>/i;
