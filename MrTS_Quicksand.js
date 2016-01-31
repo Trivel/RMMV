@@ -9,7 +9,7 @@
 * @help 
 * --------------------------------------------------------------------------------
 * Free for non commercial use.
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 ** 
 * --------------------------------------------------------------------------------
@@ -54,6 +54,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Fixed values staying false.
 * 1.0 - Release
 */
 
@@ -117,15 +118,15 @@
 	    			} break;
 	    			case "DEATH":
 	    			{ 
-	    				this._quicksandData[region]["death"] = String(match[1]).toLowerCase();
+	    				this._quicksandData[region]["death"] = String(match[1]).toLowerCase() === "true";
 	    			} break;
 	    			case "DASH":
 	    			{ 
-	    				this._quicksandData[region]["dash"] = String(match[1]).toLowerCase();
+	    				this._quicksandData[region]["dash"] = String(match[1]).toLowerCase() === "true";
 	    			} break;
 	    			case "CUTOFF":
 	    			{ 
-	    				this._quicksandData[region]["cutoff"] = String(match[1]).toLowerCase();
+	    				this._quicksandData[region]["cutoff"] = String(match[1]).toLowerCase() === "true";
 	    			} break;
 	    			case "MAXSINK":
 	    			{ 
@@ -386,7 +387,7 @@
 	Sprite_Character.prototype.updateOther = function() {
 		_SpriteCharacter_updateOther.call(this);
 		this._sunk = this._character._sunk;	
-		this._cutOff = (this._character.cutOffBody() == "true");
+		this._cutOff = this._character.cutOffBody();
 	};
 
 	//-----------------------------------------------------------------------------
