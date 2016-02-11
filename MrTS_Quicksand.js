@@ -9,7 +9,7 @@
 * @help 
 * --------------------------------------------------------------------------------
 * Free for non commercial use.
-* Version 1.1
+* Version 1.2
 * --------------------------------------------------------------------------------
 ** 
 * --------------------------------------------------------------------------------
@@ -20,9 +20,8 @@
 * SinkSpeed: [FLOAT]
 * SlowDown: [FLOAT]
 * MaxSlowDown: [FLOAT]
-* DeathSink: [INT]
 * MaxSink: [INT]
-* Death: [true/false]
+* SinkReached: [Common Event ID/0/-1]
 * Dash: [true/false]
 * CutOff: [true/false]
 * </quicksand>
@@ -35,9 +34,9 @@
 * SinkSpeed: [FLOAT]   - How fast player sinks in. E.g. 0.05, 0.1, 1.0
 * SlowDown: [FLOAT]    - How resistant it is to move in quicksand E.g. 0.05, 0.1
 * MaxSlowDown: [FLOAT] - What's the highest resistance against moving E.g. 0.5
-* DeathSink: [INT]     - At how many sunk should player die. (Usually 48)
 * MaxSink: [INT]       - How deep can player sink in. E.g. 48
-* Death: [true/false]  - Can player die when sunk in? true/false
+* SinkReached: [CE ID] - What happens after player sinks in.
+*                      - 0 - nothing, -1 - death, number > 0 - call CE of that ID
 * Dash: [true/false]   - Can player dash while in quicksand? true/false
 * CutOff: [true/false] - Does player's body actually sink in?
 *
@@ -54,12 +53,12 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.2 - Removed redundant tags, more options on sink in.
 * 1.1 - Fixed values staying false.
 * 1.0 - Release
 */
 
 (function() {
-
 	//--------------------------------------------------------------------------
 	// Game_Map
 	// 
@@ -112,13 +111,13 @@
 	    			{
 	    				this._quicksandData[region]["maxslowdown"] = Number(match[1]);
 	    			} break;
-	    			case "DEATHSINK":
+	    			case "MAXSINK":
 	    			{ 
-	    				this._quicksandData[region]["deathsink"] = Number(match[1]);
+	    				this._quicksandData[region]["maxsink"] = Number(match[1]);
 	    			} break;
-	    			case "DEATH":
-	    			{ 
-	    				this._quicksandData[region]["death"] = String(match[1]).toLowerCase() === "true";
+	    			case "SINKREACHED":
+	    			{
+	    				this._quicksandData[region]["sinkreached"] = Number(match[1]);
 	    			} break;
 	    			case "DASH":
 	    			{ 
@@ -127,10 +126,6 @@
 	    			case "CUTOFF":
 	    			{ 
 	    				this._quicksandData[region]["cutoff"] = String(match[1]).toLowerCase() === "true";
-	    			} break;
-	    			case "MAXSINK":
-	    			{ 
-	    				this._quicksandData[region]["maxsink"] = Number(match[1]);
 	    			} break;
 	    		}
 	    	};
@@ -165,18 +160,11 @@
 		return 48;
 	};
 
-	Game_Map.prototype.deathSink = function(x, y) {
+	Game_Map.prototype.sinkReached = function(x, y) {
 		var regionId = this.regionId(x, y);
 		if (this._quicksandData[regionId])
-			return this._quicksandData[regionId]["deathsink"];
-		return 48;
-	};
-
-	Game_Map.prototype.dieInSink = function(x, y) {
-		var regionId = this.regionId(x, y);
-		if (this._quicksandData[regionId])
-			return this._quicksandData[regionId]["death"];
-		return false;
+			return this._quicksandData[regionId]["sinkreached"];
+		return 0;
 	};
 
 	Game_Map.prototype.maxSlowDown = function(x, y) {
@@ -290,12 +278,8 @@
 		return $gameMap.maxSink(this.x, this.y);
 	};
 
-	Game_CharacterBase.prototype.deathSink = function() {
-		return $gameMap.deathSink(this.x, this.y);
-	};
-
-	Game_CharacterBase.prototype.dieInSink = function() {
-		return $gameMap.dieInSink(this.x, this.y);
+	Game_CharacterBase.prototype.sinkReached = function() {
+		return $gameMap.sinkReached(this.x, this.y);
 	};
 
 	Game_CharacterBase.prototype.maxSlowDown = function() {
@@ -329,10 +313,15 @@
 	Game_Player.prototype.updateSinkingPlayer = function() {
 		if (this.isInQuicksand())
 		{
-			if (this.dieInSink() == true && this._sunk >= this.deathSink() && !this._gameOverScreen)
+			if (this.sinkReached() !== 0 && this._sunk >= this.maxSink() && !this._gameOverScreen)
 			{
-				this._gameOverScreen = true;
-				SceneManager.goto(Scene_Gameover);
+				if (this.sinkReached() === -1)
+				{
+					this._gameOverScreen = true;
+					SceneManager.goto(Scene_Gameover);
+				} else if (!$gameMap.isEventRunning()){
+					$gameTemp.reserveCommonEvent(this.sinkReached());
+				}
 			}
 		}
 	}; 
@@ -348,7 +337,7 @@
 	};
 
 	//--------------------------------------------------------------------------
-	// Game_Player
+	// Sprite_Character
 	// 
 
 	var _SpriteCharacter_initMembers = Sprite_Character.prototype.initMembers;
