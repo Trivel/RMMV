@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
-* @plugindesc Prints all executing common events to console.
+* @plugindesc Logs all executing common events to console.
 * @author Mr. Trivel
 *
 * @param On
