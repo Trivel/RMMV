@@ -6,8 +6,16 @@
 * @plugindesc Adds a chance of encountering rare versions of enemies.
 * @author Mr. Trivel
 *
-* @help This plugin does not provide plugin commands.
+* @help
+* --------------------------------------------------------------------------------
+* Terms of Use
+* --------------------------------------------------------------------------------
+* Don't remove the header or claim that you wrote this plugin.
+* Credit Mr. Trivel if using this plugin in your project.
+* Free for commercial and non-commercial projects.
+* --------------------------------------------------------------------------------
 * Version 1.0
+* --------------------------------------------------------------------------------
 *
 * It requires two commands used in enemies note fields:
 * <re_id: X> - ID of rare enemy
