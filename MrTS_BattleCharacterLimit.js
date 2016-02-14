@@ -43,7 +43,7 @@
 * Terms of Use
 * --------------------------------------------------------------------------------
 * Don't remove the header or claim that you wrote this plugin.
-* Credit Mr. Trivel if used in project.
+* Credit Mr. Trivel if using this plugin in your project.
 * Free for commercial and non-commercial projects.
 * --------------------------------------------------------------------------------
 * Version 1.1
