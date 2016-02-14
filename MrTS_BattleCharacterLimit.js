@@ -38,8 +38,16 @@
 * @desc Space between rows
 * @default 54
 * 
-* @help Version 1.1
-Free for commercial and non-commercial use.
+* @help 
+* --------------------------------------------------------------------------------
+* Terms of Use
+* --------------------------------------------------------------------------------
+* Don't remove the header or claim that you wrote this plugin.
+* Credit Mr. Trivel if used in your project.
+* Free for commercial and non-commercial projects.
+* --------------------------------------------------------------------------------
+* Version 1.1
+* --------------------------------------------------------------------------------
 */
 
 (function() {
