@@ -30,8 +30,16 @@
 * @desc Message display after victory
 * @default %1 received %2 %3!
 *
-* @help This plugin does not provide plugin commands.
+* @help
+* --------------------------------------------------------------------------------
+* Terms of Use
+* --------------------------------------------------------------------------------
+* Don't remove the header or claim that you wrote this plugin.
+* Credit Mr. Trivel if using this plugin in your project.
+* Free for commercial and non-commercial projects.
+* --------------------------------------------------------------------------------
 * Version 1.0
+* --------------------------------------------------------------------------------
 *
 * Enemies give EXP according to Actor level.
 * Enemies that have lower level will give less EXP while enemies higher level than
