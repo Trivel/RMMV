@@ -58,8 +58,8 @@
 * Icon Allignment - is icon onon Left or Right side of the popup, left by default
 * 
 * Examples: 
-* CreatePopup 23 left "Reputation +\v[20]"
-* CreatePopup 17 right "Memories gone"
+* CreatePopup 23 left Reputation +\v[20]
+* CreatePopup 17 right Memories gone
 *
 * ---
 * StopPopups - disables popups
