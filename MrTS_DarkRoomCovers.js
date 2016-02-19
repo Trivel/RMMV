@@ -5,6 +5,11 @@
 /*:
 * @plugindesc Hides or reveals regions.
 * @author Mr. Trivel
+*
+* @param Tile Size
+* @desc How big are map tiles? X Y
+* Default: 48 48
+* @default 48 48
 * 
 * @help 
 * --------------------------------------------------------------------------------
@@ -15,7 +20,7 @@
 * Free for non-commercial projects.
 * For commercial use contact Mr. Trivel.
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -29,15 +34,21 @@
 * --------------------------------------------------------------------------------
 * RegionReveal [ID] - Reveals tiles of specific region
 * RegionHide [ID] - Hides tiles of specific region
+* RegionReset - Resets all open regions
 * --------------------------------------------------------------------------------
 * 
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Performance issues fixed, code cleanup
 * 1.0 - Release
 */
 
 (function() {
+	var parameters = PluginManager.parameters('MrTS_DarkRoomCovers');
+	var paramTileSize = String(parameters['Tile Size'] || "48 48").split(' ');
+	var tileSizeX = Number(paramTileSize[0]);
+	var tileSizeY = Number(paramTileSize[1]);
 
 	//--------------------------------------------------------------------------
 	// Game_Interpreter
@@ -47,56 +58,26 @@
 	Game_Interpreter.prototype.pluginCommand = function(command, args) {
 		_Game_Interpreter_pluginCommand.call(this, command, args);
 		if (command.toLowerCase() === "regionreveal") {
-			$gameMap.setShowRegionId(Number(args[0]));
+			$gameMap.addToCurrentlyOpenRegions(Number(args[0]));
 		} else if (command.toLowerCase() === "regionhide") {
-			$gameMap.setHideRegionId(Number(args[0]));
+			$gameMap.removeFromCurrentlyOpenRegions(Number(args[0]));
+		} else if (command.toLowerCase() === "regionreset") {
+			$gameMap.resetCurrentlyOpenRegions();
 		}
 	};
 
 	//----------------------------------------------------------------------------
 	// Game_Map
 	// 
-
-	// showRegionId
-	Game_Map.prototype.setShowRegionId = function(id) {
-		if (!this._showRegionId) this._showRegionId = [];
-		this._showRegionId.push(id);
-		this.addToCurrentlyOpenRegions(id);
-	};
-
-	Game_Map.prototype.getShowRegionId = function() {
-		if (!this._showRegionId) this._showRegionId = [];
-		return this._showRegionId;
-	};
-
-	Game_Map.prototype.eraseShowRegionId = function() {
-		this._showRegionId = [];
-	};
-
-	// hideRegionId
-	Game_Map.prototype.setHideRegionId = function(id) {
-		if (!this._hideRegionId) this._hideRegionId = [];
-		this._hideRegionId.push(id);
-		this.removeFromCurrentlyOpenRegions(id);
-	};
-
-	Game_Map.prototype.getHideRegionId = function() {
-		if (!this._hideRegionId) this._hideRegionId = [];
-		return this._hideRegionId;
-	};
-
-	Game_Map.prototype.eraseHideRegionId = function() {
-		this._hideRegionId = [];
-	};
-
+	
 	// currentlyOpenRegions
 	Game_Map.prototype.currentlyOpenRegions = function() {
-		if (!this._openRegionIds) this._openRegionIds = [];
+		if (!this._openRegionIds) this._openRegionIds = [0];
 		return this._openRegionIds;
 	};
 
 	Game_Map.prototype.addToCurrentlyOpenRegions = function(id) {
-		if (!this._openRegionIds) this._openRegionIds = [];
+		if (!this._openRegionIds) this._openRegionIds = [0];
 		if (!this._openRegionIds.contains(id)) this._openRegionIds.push(id);
 	};
 
@@ -106,7 +87,7 @@
 	};
 
 	Game_Map.prototype.resetCurrentlyOpenRegions = function() {
-		this._openRegionIds = [];
+		this._openRegionIds = [0];
 	};
 
 	//----------------------------------------------------------------------------
@@ -142,25 +123,25 @@
 		this._tone = [0, 0, 0, 0];
 		this.opaque = true;
 		this._darkCovers = [];
+		this._displayX = 0;
+		this._displayY = 0;
+		this._regions = $gameMap.currentlyOpenRegions().clone();
 		this.createDarkCovers();
 		this.update();
 	};
 
 	Spriteset_DarkCover.prototype.createDarkCovers = function() {
-		var bitmap = new Bitmap(48, 48);
+		var bitmap = new Bitmap(tileSizeX, tileSizeY);
 		bitmap.fillAll('#000000');
-		for (var j = 0; j < $gameMap.height(); j++) {
+		for (var j = -1; j < Math.ceil(Graphics.boxHeight/tileSizeY)+2; j++) {
 			this._darkCovers.push([]);
-			for (var i = 0; i < $gameMap.width(); i++) {
+			for (var i = -1; i < Math.ceil(Graphics.boxWidth/tileSizeX)+2; i++) {
 				var cover = new Sprite(bitmap);
-				cover.x = i * 48;
-				cover.y = j * 48;
-				cover.visible = false;
-				if ($gameMap.regionId(i, j) > 0)
-				  	cover.visible = !$gameMap.currentlyOpenRegions().contains($gameMap.regionId(i, j));
-				else
-					cover.visible = false;
-				this._darkCovers[j].push(cover);
+				cover.x = i * tileSizeX;
+				cover.y = j * tileSizeY;
+				var regionId = $gameMap.regionId(i+this._displayX, j+this._displayY);
+				cover.visible = !(this._regions.contains(regionId));
+				this._darkCovers[j+1].push(cover);
 				this.addChild(cover);
 			}
 		}
@@ -168,27 +149,21 @@
 
 	Spriteset_DarkCover.prototype.update = function() {
 		Sprite.prototype.update.call(this);
-		this.x = -$gameMap.displayX() * $gameMap.tileWidth();
-		this.y = -$gameMap.displayY() * $gameMap.tileHeight();
-		if ($gameMap.getShowRegionId().length > 0)
+		this.x = (-$gameMap.displayX() + Math.floor($gameMap.displayX())) * tileSizeX;
+		this.y = (-$gameMap.displayY() + Math.floor($gameMap.displayY())) * tileSizeY;
+		if (Math.floor($gameMap.displayX()) !== this._displayX || 
+			Math.floor($gameMap.displayY()) !== this._displayY ||
+			!$gameMap.currentlyOpenRegions().equals(this._regions))
 		{
-			for (var j = 0; j < $gameMap.height(); j++) {
-				for (var i = 0; i < $gameMap.width(); i++) {
-					if ($gameMap.getShowRegionId().contains($gameMap.regionId(i, j)))
-						this._darkCovers[j][i].visible = false;
+			this._displayX = Math.floor($gameMap.displayX());
+			this._displayY = Math.floor($gameMap.displayY());
+			this._regions = $gameMap.currentlyOpenRegions().clone();
+			for (var j = -1; j < Math.ceil(Graphics.boxHeight/tileSizeY)+2; j++) {
+				for (var i = -1; i < Math.ceil(Graphics.boxWidth/tileSizeX)+2; i++) {
+					var regionId = $gameMap.regionId(i+this._displayX, j+this._displayY);
+					this._darkCovers[j+1][i+1].visible = !(this._regions.contains(regionId));
 				}
 			}
-			$gameMap.eraseShowRegionId();
-		}
-		if ($gameMap.getHideRegionId().length > 0)
-		{
-			for (var j = 0; j < $gameMap.height(); j++) {
-				for (var i = 0; i < $gameMap.width(); i++) {
-					if ($gameMap.getHideRegionId().contains($gameMap.regionId(i, j)))
-						this._darkCovers[j][i].visible = true;
-				}
-			}
-			$gameMap.eraseHideRegionId();
 		}
 	};
 })();
