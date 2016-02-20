@@ -244,11 +244,4 @@
 	Window_PopUp.prototype.standardFontSize = function() {
 		return paramPopFontSize;
 	};
-
-	Window_PopUp.prototype.resetFontSettings = function() {
-	    this.contents.fontFace = this.standardFontFace();
-	    this.contents.fontSize = this.standardFontSize();
-	    this.contents.outlineWidth = 4;
-	    this.resetTextColor();
-	};
 })();
