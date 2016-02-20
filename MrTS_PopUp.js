@@ -35,6 +35,11 @@
 * @desc Icon Index for Gold?
 * Default: 17
 * @default 17
+*
+* @param Quantity Sign
+* @desc How should item quantity shown?
+* Default: x
+* @default x
 * 
 * @help 
 * --------------------------------------------------------------------------------
@@ -45,7 +50,7 @@
 * Free for non-commercial projects.
 * For commercial use contact Mr. Trivel.
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -58,8 +63,8 @@
 * Icon Allignment - is icon onon Left or Right side of the popup, left by default
 * 
 * Examples: 
-* CreatePopup 23 left Reputation +\v[20]
-* CreatePopup 17 right Memories gone
+* CreatePopup 23 left "Reputation +\v[20]"
+* CreatePopup 17 right "Memories gone"
 *
 * ---
 * StopPopups - disables popups
@@ -69,6 +74,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Showing quantity when more than 1 item is obtained.
 * 1.0 - Release
 */
 
@@ -80,6 +86,7 @@
 	var paramPopFontType = String(parameters['Pop Font Type'] || "GameFont");
 	var paramPopFontSize = Number(parameters['Pop Font Size'] || 28);
 	var paramGoldIcon = Number(parameters['Gold Icon'] || 17);
+	var paramQuantitySign = String(parameters['Quantity Sign'] || 'x');
 
 	//--------------------------------------------------------------------------
 	// Game_Interpreter
@@ -130,10 +137,16 @@
 		SceneManager._scene.queuePopup(iconIndex, iconAllign, text);
 	};
 
+	//--------------------------------------------------------------------------
+	// Game Party
+
 	var _GameParty_gainItem = Game_Party.prototype.gainItem;
 	Game_Party.prototype.gainItem = function(item, amount, includeEquip) {
 		_GameParty_gainItem.call(this, item, amount, includeEquip);
-		if (amount > 0) $gameSystem.createPopup(item.iconIndex, "left", item.name);
+		if (amount > 0) {
+			var text = item.name + (amount > 1 ? " " + paramQuantitySign + "" + amount : "");
+			$gameSystem.createPopup(item.iconIndex, "left", text);
+		}
 	};
 
 	var _GameParty_gainGold = Game_Party.prototype.gainGold;
@@ -144,6 +157,7 @@
 
 	//--------------------------------------------------------------------------
 	// Scene_Map
+
 	var _SceneMap_createDisplayObjects = Scene_Map.prototype.createDisplayObjects;
 	Scene_Map.prototype.createDisplayObjects = function() {
 		_SceneMap_createDisplayObjects.call(this);
@@ -229,5 +243,12 @@
 
 	Window_PopUp.prototype.standardFontSize = function() {
 		return paramPopFontSize;
+	};
+
+	Window_PopUp.prototype.resetFontSettings = function() {
+	    this.contents.fontFace = this.standardFontFace();
+	    this.contents.fontSize = this.standardFontSize();
+	    this.contents.outlineWidth = 4;
+	    this.resetTextColor();
 	};
 })();
