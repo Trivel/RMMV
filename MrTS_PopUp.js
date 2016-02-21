@@ -50,7 +50,7 @@
 * Free for non-commercial projects.
 * For commercial use contact Mr. Trivel.
 * --------------------------------------------------------------------------------
-* Version 1.1
+* Version 1.2
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -63,8 +63,8 @@
 * Icon Allignment - is icon onon Left or Right side of the popup, left by default
 * 
 * Examples: 
-* CreatePopup 23 left "Reputation +\v[20]"
-* CreatePopup 17 right "Memories gone"
+* CreatePopup 23 left Reputation +\v[20]
+* CreatePopup 17 right Memories gone
 *
 * ---
 * StopPopups - disables popups
@@ -74,6 +74,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.2 - Crash fixes.
 * 1.1 - Showing quantity when more than 1 item is obtained.
 * 1.0 - Release
 */
@@ -143,7 +144,7 @@
 	var _GameParty_gainItem = Game_Party.prototype.gainItem;
 	Game_Party.prototype.gainItem = function(item, amount, includeEquip) {
 		_GameParty_gainItem.call(this, item, amount, includeEquip);
-		if (amount > 0) {
+		if (amount > 0 && item) {
 			var text = item.name + (amount > 1 ? " " + paramQuantitySign + "" + amount : "");
 			$gameSystem.createPopup(item.iconIndex, "left", text);
 		}
@@ -243,5 +244,9 @@
 
 	Window_PopUp.prototype.standardFontSize = function() {
 		return paramPopFontSize;
+	};
+
+	Window_PopUp.prototype.textWidthEx = function(text) {
+	    return this.drawTextEx(text, 0, this.contents.height);
 	};
 })();
