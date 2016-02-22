@@ -22,6 +22,16 @@
 * @desc If reaction succeeds which state to apply for the duration of attack?
 * Default: 11
 * @default 11
+*
+* @param Success SFX
+* @desc Which SFX to play on success?
+* Default: Skill2
+* @default Skill2
+*
+* @param Fail SFX
+* @desc Which SFX to play on failure?
+* Default: Splash
+* @default Splash
 * 
 * @help 
 * --------------------------------------------------------------------------------
@@ -33,7 +43,7 @@
 * --------------------------------------------------------------------------------
 * Commissioned by Fisherolol
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 * 
 * --------------------------------------------------------------------------------
@@ -79,6 +89,8 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - SFX on success/failure. Fixed hit image not appearing when using default
+*       values.
 * 1.0 - Release
 */
 
@@ -87,6 +99,8 @@
 	var paramDefaultReactAppear = String(parameters['Default Reaction Appearance'] || "20 60");
 	var paramDefaultReactWindow = String(parameters['Default Reaction Time'] || "60 150");
 	var paramDefaultStateId = Number(parameters['Default State'] || 11);
+	var paramSuccessSfx = String(parameters['Success SFX'] || "Skill2");
+	var paramFailSfx = String(parameters['Fail SFX'] || "Splash");
 
 	var _SceneBattle_createDisplayObjects = Scene_Battle.prototype.createDisplayObjects;
 	Scene_Battle.prototype.createDisplayObjects = function() {
@@ -95,6 +109,16 @@
 	};
 
 	Scene_Battle.prototype.createReactionVariables = function() {
+		this._successSfx = AudioManager.makeEmptyAudioObject();
+		this._failSfx = AudioManager.makeEmptyAudioObject();
+		this._successSfx.name = paramSuccessSfx;
+		this._failSfx.name = paramFailSfx;
+		this._successSfx.volume = 90;
+		this._successSfx.pitch = 100;
+		this._failSfx.volume = 90;
+		this._failSfx.pitch = 100;
+		AudioManager.loadStaticSe(this._successSfx);
+		AudioManager.loadStaticSe(this._failSfx);
 		this._reactionAppearTimer = 0;
 		this._reactionWindowTimer = 0;
 		this._reactionState = 0;
@@ -111,10 +135,12 @@
 		var appearTimer = paramDefaultReactAppear;
 		if (appearTimer[0] === ' ') appearTimer = appearTimer.substr(1);
 		appearTimer = appearTimer.split(' ');
+		appearTimer = Math.randomInt(Number(appearTimer[1]) - Number(appearTimer[0])) + Number(appearTimer[0]);
 
 		var windowTimer = paramDefaultReactWindow;
 		if (windowTimer[0] === ' ') windowTimer = windowTimer.substr(1);
 		windowTimer = windowTimer.split(' ');
+		windowTimer = Math.randomInt(Number(windowTimer[1]) - Number(windowTimer[0])) + Number(windowTimer[0]);
 
 		var state = paramDefaultStateId;
 
@@ -160,7 +186,8 @@
 					this._reactionWindowTimer = 0;
 					this._reactionStatus = 'off';
 					this._reactSprite.visible = false;
-					this._reactSprite.bitmap = this._reactWaitSpriteBitmap;	
+					this._reactSprite.bitmap = this._reactWaitSpriteBitmap;
+					AudioManager.playStaticSe(this._failSfx);
 				}
 
 				this._reactionAppearTimer -= 1;
@@ -177,12 +204,14 @@
 					var actor = BattleManager._subject;
 					actor.addState(this._reactionState);
 					actor._reactionStateId = this._reactionState;
+					AudioManager.playStaticSe(this._successSfx);
 				}
 				this._reactionWindowTimer -= 1;
 				if (this._reactionWindowTimer <= 0) {
 					this._reactionStatus = 'off';
 					this._reactSprite.visible = false;
-					this._reactSprite.bitmap = this._reactWaitSpriteBitmap;					
+					this._reactSprite.bitmap = this._reactWaitSpriteBitmap;
+					AudioManager.playStaticSe(this._failSfx);			
 				}
 			}
 		}
@@ -190,7 +219,7 @@
 
 	var _SceneBattle_isAnyInputWindowActive = Scene_Battle.prototype.isAnyInputWindowActive;
 	Scene_Battle.prototype.isAnyInputWindowActive = function() {
-		var active = +_SceneBattle_isAnyInputWindowActive.call(this);
+		var active = _SceneBattle_isAnyInputWindowActive.call(this);
 		return active || this._reactSprite.visible;
 	};
 
