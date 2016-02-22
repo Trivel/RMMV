@@ -43,7 +43,7 @@
 * --------------------------------------------------------------------------------
 * Commissioned by Fisherolol
 * --------------------------------------------------------------------------------
-* Version 1.1
+* Version 1.2
 * --------------------------------------------------------------------------------
 * 
 * --------------------------------------------------------------------------------
@@ -89,6 +89,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.2 - Fixed success and failure sound play overlap.
 * 1.1 - SFX on success/failure. Fixed hit image not appearing when using default
 *       values.
 * 1.0 - Release
@@ -198,6 +199,7 @@
 			}
 			if (this._reactionStatus === 'window')
 			{
+				var played = false;
 				if (Input.isTriggered('ok') || TouchInput.isTriggered())
 				{
 					this._reactionWindowTimer = 0;
@@ -205,13 +207,14 @@
 					actor.addState(this._reactionState);
 					actor._reactionStateId = this._reactionState;
 					AudioManager.playStaticSe(this._successSfx);
+					played = true;
 				}
 				this._reactionWindowTimer -= 1;
 				if (this._reactionWindowTimer <= 0) {
 					this._reactionStatus = 'off';
 					this._reactSprite.visible = false;
 					this._reactSprite.bitmap = this._reactWaitSpriteBitmap;
-					AudioManager.playStaticSe(this._failSfx);			
+					if (!played) AudioManager.playStaticSe(this._failSfx);			
 				}
 			}
 		}
