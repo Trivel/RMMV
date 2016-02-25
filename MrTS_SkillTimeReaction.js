@@ -1,5 +1,5 @@
 //=============================================================================
-// MrTS_ReactionSkillTime.js
+// MrTS_SkillTimeReaction.js
 //=============================================================================
 
 /*:
@@ -103,7 +103,7 @@
 */
 
 (function() {
-	var parameters = PluginManager.parameters('MrTS_ReactionSkillTime');
+	var parameters = PluginManager.parameters('MrTS_SkillTimeReaction');
 	var paramDefaultReactAppear = String(parameters['Default Reaction Appearance'] || "20 60");
 	var paramDefaultReactWindow = String(parameters['Default Reaction Time'] || "60 150");
 	var paramDefaultStateId = Number(parameters['Default State'] || 11);
