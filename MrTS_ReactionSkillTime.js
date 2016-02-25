@@ -45,6 +45,13 @@
 * --------------------------------------------------------------------------------
 * Version 1.2
 * --------------------------------------------------------------------------------
+*
+* --------------------------------------------------------------------------------
+* --------------------------------------------------------------------------------
+* REQUIRES:
+* Yanfly's Battle Engine Core
+* --------------------------------------------------------------------------------
+* --------------------------------------------------------------------------------
 * 
 * --------------------------------------------------------------------------------
 * Skill Tags
@@ -228,7 +235,6 @@
 
 	var _GameActor_useItem = Game_Actor.prototype.useItem;
 	Game_Actor.prototype.useItem = function(item) {
-		_GameActor_useItem.call(this, item);
 		if (item.meta.Reaction)
 		{
 			if (SceneManager._scene.constructor === Scene_Battle)
@@ -237,6 +243,7 @@
 				SceneManager._scene._reactSprite.visible = true;
 			}			
 		}
+		_GameActor_useItem.call(this, item);
 	};
 
 	var _Battlemanager_endAction = BattleManager.endAction;
