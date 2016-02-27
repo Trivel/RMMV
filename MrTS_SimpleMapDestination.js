@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
-* @plugindesc Changes map destination graphic and can diable it's effect.
+* @plugindesc Changes map destination graphic and can disable it's effect.
 * @author Mr. Trivel
 *
 * @param Disable Effect
