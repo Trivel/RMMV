@@ -19,7 +19,7 @@
 * Credit Mr. Trivel if using this plugin in your project.
 * Free for commercial and non-commercial projects.
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -77,6 +77,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Critical damage won't go lower than normal damage anymore.
 * 1.0 - Release
 */
 
@@ -115,6 +116,6 @@
 	};
 
 	Game_Action.prototype.applyCritical = function(damage) {
-		return damage * this.subject().critMultiplier();
+		return damage * Math.max(1.0, this.subject().critMultiplier());
 	};
 })();
