@@ -11,6 +11,11 @@
 * Default: 313
 * @default 313
 *
+* @param Variable Icon Id
+* @desc Default icon ID for drawing variables on reward tiles.
+* Default: 222
+* @default 222
+*
 * @param Cursor Offset X
 * @desc By how many pixels is the cursor offset in X axis?
 * Default: 0
@@ -22,9 +27,19 @@
 * @default 0
 *
 * @param Display Board Window
-* @desc True/False
-* Default True
+* @desc Display Board Window's Background? True/False
+* Default: True
 * @default True 
+*
+* @param Display Cost Window
+* @desc Display Cost Window's Background? True/False
+* Default: True
+* @default True
+*
+* @param Display Scene Background
+* @desc If disabled will show usual map background unless specified.
+* Default: True
+* @default True
 *
 * @param Pick Get Sound
 * @desc Sound name to play when picking.
@@ -51,7 +66,7 @@
 * pick_tileEmpty.png - Empty tile image, 48x48 pixels
 * pick_tileUnknown.png - Unrevealed tile image, 48x48 pixels
 * pick_Cursor.png - Cursor, 48 pixels height, (48 * Cursor Frames) pixels width
-* pick_Background.png - background, as big as the screen
+* pick_Background.png - default background, as big as the screen
 * 
 * --------------------------------------------------------------------------------
 * Plugin Calls
@@ -59,18 +74,23 @@
 * Pickboard Start [Board ID] [X] [Y] - creates empty board with X Y dimensions
 * Pickboard Reset [Board ID] - resets board of ID to empty state
 * Pickboard IsComplete [Board ID] [Switch ID] - Saves answer to a switch
-* Pickboard AddReward [Board ID] [Type] [ID] [Amount] [Tiles] - Adds rewards
-* Pickboard SetPrice [Board ID] [Type] [ID] [Amount] - Picking isn't free, right?
+* Pickboard AddReward [Board ID] [RewardType] [ID] [Amount] [Tiles] [IconID]
+* Pickboard SetPrice [Board ID] [PriceType] [ID] [Amount] [IconID]
 * Pickboard Enter [Board ID] - go the scene with pickboard of ID
+* Pickboard SetBackground [Board ID] [ImageName] - Changes background of pickboard
+* Pickboard OpenTiles [Board ID] [NumberOfTiles] - opens a number of tiles
+* 
 *
 * [Board ID] - ID of the board you're changing
 * [X] - Width of the board
 * [Y] - Height of the board
 * [Switch ID] - ID of the switch to save board's state
-* [Type] - a, w, i, g - armor, weapon, item, gold
+* [RewardType] - a, w, i, g, v - armor, weapon, item, gold, variable
+* [PriceType] - a, w, i, g, v - armor, weapon, item, gold, variable
 * [ID] - ID of item, if [Type] is gold -- then ID is irrelevant
 * [Amount] - How much should be reward if adding it or taken if setting price
 * [Tiles] - How many tiles on board has this reward
+* *[IconID] - *OPTIONAL* changes any item, weapon, armor, variable id to a new one
 *
 * Example calls:
 * Pickboard Start 3 5 5
@@ -85,6 +105,13 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Variables added as reward choice or price choice.
+*     - Able to change any item, gold or variable displayed icon ID for any board.
+*     - Added transparency option for reward window background.
+*     - Added command to add different backgrounds to different pickboards.
+*     - Added option to not have a background by default.
+*     - Now the board is revealed if there's no more rewards to pick.
+*     - Added a new command to reveal X random tiles on the board.
 * 1.0 - Release
 */
 
@@ -95,9 +122,12 @@
 
 	var parameters = PluginManager.parameters('MrTS_Pickboard');
 	var paramGoldIconId = Number(parameters['Gold Icon Id'] || 313);
+	var paramVariableIconId = Number(parameters['Variable Icon Id'] || 222);
 	var paramCursorOffsetX = Number(parameters['Cursor Offset X'] || 0);
 	var paramCursorOffsetY = Number(parameters['Cursor Offset Y'] || 0);
 	var paramDisplayBoardWindow = (parameters['Display Board Window'] || "true").toLowerCase() === "true";
+	var paramDisplayCostWindow = (parameters['Display Cost Window'] || "true").toLowerCase() === "true";
+	var paramDisplaySceneBackground = (parameters['Display Scene Background'] || "true").toLowerCase() === "true";
 	var paramPickSound = String(parameters['Pick Get Sound'] || "Coin");
 
 	//--------------------------------------------------------------------------
@@ -125,17 +155,27 @@
 				case 'addreward':
 				{
 					$gameSystem.addPickboardReward(Number(args[1]), String(args[2]), Number(args[3]),
-												   Number(args[4]), Number(args[5]));
+												   Number(args[4]), Number(args[5]), Number(args[6]));
 				} break;
 				case 'setprice':
 				{
-					$gameSystem.setPickboardPrice(Number(args[1]), String(args[2]), 
-												  Number(args[3]), Number(args[4]));
+					$gameSystem.setPickboardPrice(Number(args[1]), String(args[2]), Number(args[3]),
+												   Number(args[4]), Number(args[5]));
 				} break;
 				case 'enter':
 				{
 					$gameSystem.enterPickboardScene(Number(args[1]));
 				} break;
+				case 'setbackground':
+				{
+					$gameSystem.setPickboardBackground(Number(args[1]), String(args[2]));
+				} break;
+				case 'opentiles':
+				{
+					$gameSystem.reserveSomeOpenTiles(Number(args[1]), Number(args[2]));
+				} break;
+				
+				
 			}
 		}
 	};
@@ -161,6 +201,9 @@
 		pickboard.price.type = 'empty';
 		pickboard.price.id = 0;
 		pickboard.price.amount = 0;
+		pickboard.price.iconId = 0;
+		pickboard.background = null;
+		pickboard.reserved = 0;
 		return pickboard;
 	};
 
@@ -200,6 +243,12 @@
 		}
 	};
 
+	Game_System.prototype.revealPickboard = function(boardId) {
+		for (var i = 0; i < this._pickboardData[boardId].board.length; i++) {
+			this._pickboardData[boardId].board[i].open = true;
+		}
+	};
+
 	Game_System.prototype.isPickboardComplete = function(boardId, switchId) {
 		for (var i = 0; i < this._pickboardData[boardId].board.length; i++) {
 			if (!this._pickboardData[boardId].board[i].open)
@@ -212,7 +261,18 @@
 		return true;
 	};
 
-	Game_System.prototype.addPickboardReward = function(boardId, type, id, amount, tiles) {
+	Game_System.prototype.allRewardsPicked = function(boardId) {
+		for (var i = 0; i < this._pickboardData[boardId].board.length; i++) {
+			if (this._pickboardData[boardId].board[i].type !== 'empty' && !this._pickboardData[boardId].board[i].open)
+			{
+				return false;
+			}
+		}
+		return true;
+	};
+
+	Game_System.prototype.addPickboardReward = function(boardId, type, id, amount, tiles, iconId) {
+		iconId = iconId || 0;
 		var pickboard = this._pickboardData[boardId];
 		for (var i = 0; i < tiles; i++) {
 			if (pickboard.emptyIndexes.length === 0) continue;
@@ -221,15 +281,22 @@
 			pickboard.board[index].type = type;
 			pickboard.board[index].id = id;
 			pickboard.board[index].amount = amount;
+			pickboard.board[index].iconId = iconId;
 			pickboard.emptyIndexes.splice(emptyIndex, 1);
 		}
 	};
 
-	Game_System.prototype.setPickboardPrice = function(boardId, type, id, amount) {
+	Game_System.prototype.setPickboardPrice = function(boardId, type, id, amount, iconId) {
+		iconId = iconId || 0;
 		var price = this._pickboardData[boardId].price;
 		price.type = type;
 		price.id = id;
 		price.amount = amount;
+		price.iconId = iconId;
+	};
+
+	Game_System.prototype.setPickboardBackground = function(boardId, imageName) {
+		this._pickboardData[boardId].background = imageName;
 	};
 
 	Game_System.prototype.enterPickboardScene = function(boardId) {
@@ -237,9 +304,29 @@
 		SceneManager.push(Scene_Pickboard);
 	};
 
+	Game_System.prototype.openSomeTiles = function(boardId) {
+		var number = this._pickboardData[boardId].reserved;
+		if (number === 0) return;
+		var closedTileIndexes = [];
+		for (var i = 0; i < this._pickboardData[boardId].board.length; i++) {
+			if (!this._pickboardData[boardId].board[i].open) closedTileIndexes.push(i);
+		}
+		for (var i = 0; i < number; i++) {
+			var r = Math.randomInt(closedTileIndexes.length);
+			this.revealTile(boardId, closedTileIndexes[r]);
+			closedTileIndexes.splice(r, 1);
+		}
+		this._pickboardData[boardId].reserved = 0;
+	};
+
+	Game_System.prototype.reserveSomeOpenTiles = function(boardId, number) {
+		this._pickboardData[boardId].reserved += number;
+	};
+
 	Game_System.prototype.revealTile = function(boardId, index) {
 		var reward = this._pickboardData[boardId].board[index];
 		reward.open = true;
+		if (this.allRewardsPicked(boardId)) this.revealPickboard(boardId);
 		if (reward.type === 'empty') return;
 
 		var item = null;
@@ -248,7 +335,7 @@
 		{
 			case 'g':
 			{
-				reward.iconId = paramGoldIconId;
+				if (reward.iconId === 0) reward.iconId = paramGoldIconId;
 				$gameParty.gainGold(reward.amount);
 				return;
 			} break;
@@ -264,12 +351,19 @@
 			{
 				item = $dataItems[reward.id];
 			} break;
+			case 'v':
+			{
+				if (reward.iconId === 0) reward.iconId = paramVariableIconId;
+				var oldValue = $gameVariables.value(reward.id);
+				$gameVariables.setValue(reward.id, oldValue + reward.amount);
+			} break;
+			
 		}
 
 		if (item)
 		{
 			$gameParty.gainItem(item, reward.amount);
-			reward.iconId = item.iconIndex;
+			if (reward.iconId === 0) reward.iconId = item.iconIndex;
 		}
 	};
 
@@ -298,9 +392,19 @@
 	};
 
 	Scene_Pickboard.prototype.createBackground = function() {
-	    this._backgroundSprite = new Sprite();
-	    this._backgroundSprite.bitmap = ImageManager.loadSystem("pick_Background");
-	    this.addChild(this._backgroundSprite);
+		var boardId = $gameSystem.getActivePickboardId();
+		var boardData = $gameSystem.getPickboardData(boardId);
+		if (paramDisplaySceneBackground || boardData['background'])
+		{
+		    this._backgroundSprite = new Sprite();
+		    var image = boardData['background'] ? boardData['background'] : "pick_Background";
+		    this._backgroundSprite.bitmap = ImageManager.loadSystem(image);
+		    this.addChild(this._backgroundSprite);
+		}
+		else
+		{
+			Scene_MenuBase.prototype.createBackground.call(this);
+		}
 	};
 	
 	Scene_Pickboard.prototype.create = function() {
@@ -368,11 +472,16 @@
 			spr.y = 48 * Math.floor(i / this._pickboard.height) + this.standardPadding();
 			this.addChild(spr);
 			this._tileArray.push(spr);
-			this.updateTile(i);
 		}
 
 		this._cursorSprite = new Sprite(ImageManager.loadSystem("pick_Cursor"));
 		this.addChild(this._cursorSprite);
+
+		if (this._pickboard.reserved > 0)
+		{
+			$gameSystem.openSomeTiles(this._boardId);
+		}
+		this.updateAllTiles();
 	};
 
 	Window_PickboardSelect.prototype.updateTile = function(index) {
@@ -445,6 +554,17 @@
 			{
 				item = $dataItems[price.id];
 			} break;
+			case 'v':
+			{
+				if ($gameVariables.value(price.id) >= price.amount)
+				{
+					var oldValue = $gameVariables.value(price.id);
+					$gameVariables.setValue(price.id, oldValue - price.amount);
+					return true;
+				}
+				else return false;
+			} break;
+			
 			case 'empty':
 			{
 				return true;
@@ -464,11 +584,22 @@
 		return false;
 	};
 
+	Window_PickboardSelect.prototype.updateAllTiles = function() {
+		for (var i = 0; i < this._tileArray.length; i++) {
+    		this.updateTile(i);
+    	}
+	};
+
 	Window_PickboardSelect.prototype.processOk = function() {
 	    if (!this._board[this.index()].open && this.paidPrice()) {
 	        AudioManager.playStaticSe(this._pickSound);
 	        $gameSystem.revealTile(this._boardId, this.index())
-	        this.updateTile(this.index());
+	        
+	        if ($gameSystem.allRewardsPicked(this._boardId))
+	        	this.updateAllTiles();
+	        else
+	        	this.updateTile(this.index());
+
 	        this.updateInputData();
 	        this.callOkHandler();
 	    } else {
@@ -506,7 +637,7 @@
 		this._boardId = $gameSystem.getActivePickboardId();
 		this._pickboard = $gameSystem.getPickboardData(this._boardId);
 		this._price = this._pickboard.price;
-		this._priceIconIndex = 0;
+		this._priceIconIndex = this._price.iconId;
 		this._item = this.saveItemPrice();
 		var wx = windowPickboard.x;
 		var wy = windowPickboard.y + windowPickboard.height;
@@ -514,6 +645,7 @@
 		var ww = windowPickboard.width;
 		this._windowPickboard = windowPickboard;
 		Window_Base.prototype.initialize.call(this, wx, wy, ww, wh);
+		if (!paramDisplayCostWindow) this.opacity = 0;
 		this.refresh();
 	};
 
@@ -525,17 +657,17 @@
 			case 'w':
 			{
 				item = $dataWeapons[this._price.id];
-				this._priceIconIndex = item.iconIndex;
+				if (this._priceIconIndex === 0) this._priceIconIndex = item.iconIndex;
 			} break;
 			case 'a':
 			{
 				item = $dataArmors[this._price.id];
-				this._priceIconIndex = item.iconIndex;
+				if (this._priceIconIndex === 0) this._priceIconIndex = item.iconIndex;
 			} break;
 			case 'i':
 			{
 				item = $dataItems[this._price.id];
-				this._priceIconIndex = item.iconIndex;
+				if (this._priceIconIndex === 0) this._priceIconIndex = item.iconIndex;
 			} break;			
 		}
 		if (item) return item;
@@ -562,8 +694,13 @@
 			var have = 0;
 			if (this._price.type === 'g')
 			{
-				iconIndex = paramGoldIconId;
+				if (this._priceIconIndex === 0) iconIndex = paramGoldIconId;
 				have = $gameParty.gold();
+			} 
+			else if (this._price.type === 'v')
+			{
+				if (this._priceIconIndex === 0) iconIndex = paramVariableIconId;
+				have = $gameVariables.value(this._price.id);
 			} 
 			else
 			{
