@@ -50,13 +50,11 @@
 	});
 
 	Game_System.prototype.getCurrencyUnit = function() {
-		console.log(this._currencyUnit);
 		if (!this._currencyUnit) return $dataSystem.currencyUnit;
 		return this._currencyUnit;
 	};
 
 	Game_System.prototype.setCurrencyUnit = function(currency) {
-		console.log("hmm");
 		this._currencyUnit = currency;
 	};
 })();
