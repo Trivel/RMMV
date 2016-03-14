@@ -52,7 +52,7 @@
 * --------------------------------------------------------------------------------
 * Don't remove the header or claim that you wrote this plugin.
 * Credit Mr. Trivel if using this plugin in your project.
-* Free commercial and for non-commercial projects.
+* Free for commercial and for non-commercial projects.
 * --------------------------------------------------------------------------------
 * Version 1.0
 * --------------------------------------------------------------------------------
