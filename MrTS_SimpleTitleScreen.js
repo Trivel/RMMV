@@ -195,20 +195,20 @@
 	Scene_Title.prototype.createBackground = function() {
 		_SceneTitle_createBackground.call(this);
 
-		if (paramDisplayCursor)
-		{
-			this._cursorPos = paramCursorOffset.split(' ');
-			this._cursorSpr = new Sprite();
-			this._cursorSpr.bitmap = ImageManager.loadSystem("titleCursor");
-			this.addChild(this._cursorSpr);
-		}
-
 		if (paramDisplayBehind)
 		{
 			this._behindPos = paramBehindOffset.split(' ');
 			this._behindSpr = new Sprite();
 			this._behindSpr.bitmap = ImageManager.loadSystem("titleBehindCommand");
 			this.addChild(this._behindSpr);
+		}
+
+		if (paramDisplayCursor)
+		{
+			this._cursorPos = paramCursorOffset.split(' ');
+			this._cursorSpr = new Sprite();
+			this._cursorSpr.bitmap = ImageManager.loadSystem("titleCursor");
+			this.addChild(this._cursorSpr);
 		}
 
 		if (paramDisplayPressStart)
