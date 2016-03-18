@@ -54,7 +54,7 @@
 * Credit Mr. Trivel if using this plugin in your project.
 * Free for commercial and for non-commercial projects.
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -81,6 +81,8 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Compatibility fix plugins that disable command menu when press start is
+* 		disabled.
 * 1.0 - Release
 */
 
@@ -228,7 +230,7 @@
 	var _SceneTitle_update = Scene_Title.prototype.update;
 	Scene_Title.prototype.update = function() {
 		_SceneTitle_update.call(this);
-		if (!this._commandWindow.active && (Input.isTriggered('ok') || TouchInput.isTriggered()))
+		if (!this._commandWindow.active && this._pressStartSpr && (Input.isTriggered('ok') || TouchInput.isTriggered()))
 		{
 			SoundManager.playOk();
 			this._commandWindow.show();
