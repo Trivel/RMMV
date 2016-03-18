@@ -81,8 +81,8 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
-* 1.1 - Compatibility fix plugins that disable command menu when press start is
-* 		disabled.
+* 1.1 - Compatibility fix with plugins that disable command menu when press start
+* 		is disabled.
 * 1.0 - Release
 */
 
