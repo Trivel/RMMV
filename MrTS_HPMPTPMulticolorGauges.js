@@ -8,6 +8,21 @@ var Imported = Imported || {};
 * @plugindesc Allows to set more than starting/ending color for HP/MP/TP gauges.
 * @author Mr. Trivel
 *
+* @param Use HP Gauge
+* @desc Use multicolored HP Gauge? True/False
+* Default: True
+* @default True
+*
+* @param Use MP Gauge
+* @desc Use multicolored MP Gauge? True/False
+* Default: True
+* @default True
+*
+* @param Use TP Gauge
+* @desc Use multicolored TP Gauge? True/False
+* Default: True
+* @default True
+* 
 * @param HP Gauge
 * @desc Colors for HP gauge. Any amount. In Hex.
 * Default: #ff0000 #f1913c #dffc1d #3bbd48 #1f8304
@@ -31,12 +46,13 @@ var Imported = Imported || {};
 * Credit Mr. Trivel if using this plugin in your project.
 * Free for commercial and non-commercial projects.
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Crash fix, disabling multicolor bars from plugin parameters added.
 * 1.0 - Release
 */
 
@@ -45,6 +61,9 @@ var Imported = Imported || {};
 	var paramHPGauge = String(parameters['HP Gauge'] || "#ff0000 #f1913c #dffc1d #3bbd48 #1f8304");
 	var paramMPGauge = String(parameters['MP Gauge'] || "#f19aea #dab5eb #7f85fe #3800a9 #021456");
 	var paramTPGauge = String(parameters['TP Gauge'] || "#ffffff #bababa #7a7a7a #393939 #000000");
+	var paramUseHP = (parameters['Use HP Gauge'] || "True").toLowerCase() === "true";
+	var paramUseMP = (parameters['Use MP Gauge'] || "True").toLowerCase() === "true";
+	var paramUseTP = (parameters['Use TP Gauge'] || "True").toLowerCase() === "true";
 
 	var parArrHP = paramHPGauge.split(' ');
 	var parArrMP = paramMPGauge.split(' ');
@@ -52,7 +71,7 @@ var Imported = Imported || {};
 
 	var _WindowBase_drawActorHp = Window_Base.prototype.drawActorHp;
 	Window_Base.prototype.drawActorHp = function(actor, x, y, width) {
-		if (parArrHP.length > 0)
+		if (parArrHP.length > 0 && paramUseHP)
 		{
 			width = width || 186;
 			var offset = Math.floor(width/(parArrHP.length-1));
@@ -72,12 +91,12 @@ var Imported = Imported || {};
 								   this.hpColor(actor), this.normalColor());
 		}
 		else
-			_WindowBase_drawActorHp.calL(this, actor, x, y, width);
+			_WindowBase_drawActorHp.call(this, actor, x, y, width);
 	};
 
 	var _WindowBase_drawActorMp = Window_Base.prototype.drawActorMp;
 	Window_Base.prototype.drawActorMp = function(actor, x, y, width) {
-		if (parArrMP.length > 0)
+		if (parArrMP.length > 0 && paramUseMP)
 		{
 			width = width || 186;
 			var offset = Math.floor(width/(parArrMP.length-1));
@@ -97,12 +116,12 @@ var Imported = Imported || {};
 								   this.mpColor(actor), this.normalColor());
 		}
 		else
-			_WindowBase_drawActorMp.calL(this, actor, x, y, width);
+			_WindowBase_drawActorMp.call(this, actor, x, y, width);
 	};
 
 	var _WindowBase_drawActorTp = Window_Base.prototype.drawActorTp;
 	Window_Base.prototype.drawActorTp = function(actor, x, y, width) {
-		if (parArrTP.length > 0)
+		if (parArrTP.length > 0 && paramUseTP)
 		{
 			width = width || 186;
 			var offset = Math.floor(width/(parArrTP.length-1));
@@ -122,6 +141,6 @@ var Imported = Imported || {};
 		    this.drawText(actor.tp, x + width - 64, y, 64, 'right');
 		}
 		else
-			_WindowBase_drawActorTp.calL(this, actor, x, y, width);
+			_WindowBase_drawActorTp.call(this, actor, x, y, width);
 	};
 })();
