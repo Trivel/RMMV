@@ -9,17 +9,17 @@ var Imported = Imported || {};
 * @author Mr. Trivel
 *
 * @param HP Gauge
-* @desc Colors for HP gauge. Any amount. In Hex. Empty for default.
+* @desc Colors for HP gauge. Any amount. In Hex.
 * Default: #ff0000 #f1913c #dffc1d #3bbd48 #1f8304
 * @default #ff0000 #f1913c #dffc1d #3bbd48 #1f8304
 * 
 * @param MP Gauge
-* @desc Colors for MP gauge. Any amount. In Hex. Empty for default.
+* @desc Colors for MP gauge. Any amount. In Hex
 * Default: #f19aea #dab5eb #7f85fe #3800a9 #021456
 * @default #f19aea #dab5eb #7f85fe #3800a9 #021456
 *
 * @param TP Gauge
-* @desc Colors for TP gauge. Any amount. In Hex. Empty for default.
+* @desc Colors for TP gauge. Any amount. In Hex.
 * Default: #ffffff #bababa #7a7a7a #393939 #000000
 * @default #ffffff #bababa #7a7a7a #393939 #000000
 * 
