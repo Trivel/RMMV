@@ -28,7 +28,7 @@
 * Credit Mr. Trivel if using this plugin in your project.
 * Free for commercial and non-commercial projects.
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -56,7 +56,7 @@
 *  }
 *  ID is used for plugin commands listed above.
 *  Name is what will be seen on the command window ingame.
-*  Now, the object may have one of two groups of other properties.
+*  Now, the object may have one of three groups of other properties.
 *  Group 1 - Sublist properties:
 *  Sublist: [],
 *  Background: "BackgroundName"
@@ -66,9 +66,13 @@
 *  X: 5,
 *  Y: 20
 *
+*  Group 3 - Execute common event properties:
+*  CE_ID: 2
+*
 *  So if Object is Group 1 type, when you click on it, you'll get it's list,
 *  meanwhile if Object is Group 2 type, when you click on it, you'll be teleported
-*  to it's map.
+*  to it's map, if Object is Group 3 type, when you click on it, you'll get Common
+*  Event executed defined by CE_ID.
 *
 *  To edit the map list, open up this plugin in your favorite text editor and
 *  scroll down to "EDIT MAP LIST HERE". Make sure to check the example there, too.
@@ -85,6 +89,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - List allows excuting Common Events.
 * 1.0 - Release
 */
 
@@ -135,6 +140,11 @@
 				Y: 18
 			}
 			]
+		},
+		{
+			ID: 7,
+			Name: "Call the Events!",
+			CE_ID: 1
 		}
 	];
 	//--------------------------------------------------------------------------------
@@ -251,6 +261,11 @@
 			this._listWindow.setObject(item);
 			this._listWindow.refresh();
 			this._listWindow.activate()
+		}
+		else if (item.CE_ID)
+		{
+			this.popScene();
+			$gameTemp.reserveCommonEvent(item.CE_ID);
 		}
 		else
 		{
