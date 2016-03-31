@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
-* @plugindesc Allows restricting actor's, classes and global max level.
+* @plugindesc Allows restricting and lifting actor, class and global max level.
 * @author Mr. Trivel
 * 
 * @help 
