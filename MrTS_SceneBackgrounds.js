@@ -14,7 +14,7 @@
 * Credit Mr. Trivel if using this plugin in your project.
 * Free for commercial and non-commercial projects.
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -31,6 +31,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Compatibility with Yanfly
 * 1.0 - Release
 */
 
@@ -42,6 +43,7 @@
 		Scene_Shop: "pick_Background",
 		Scene_Menu: "pick_Background2",
 		Scene_Item: "Meadow",
+		Scene_Party: "blackness"
 		// --------------------------------------------------------------------------------
 		// EDIT LIST THERE ^
 		// --------------------------------------------------------------------------------
@@ -50,7 +52,14 @@
 	var _Scene_MenuBase_createBackground = Scene_MenuBase.prototype.createBackground;
 	Scene_MenuBase.prototype.createBackground = function() {
 		_Scene_MenuBase_createBackground.call(this);
-		if (this._backgroundSprite && sceneBackgroundList[this.constructor.name])
-			this._backgroundSprite.bitmap = ImageManager.loadSystem(sceneBackgroundList[this.constructor.name]);
+		if (this._backgroundSprite)
+		{
+			for (var key in sceneBackgroundList) {
+				if (sceneBackgroundList.hasOwnProperty(key)) {
+					if (this.constructor === eval(key)) 
+						this._backgroundSprite.bitmap = ImageManager.loadSystem(sceneBackgroundList[key]);
+				}
+			}
+		}
 	};
 })();
