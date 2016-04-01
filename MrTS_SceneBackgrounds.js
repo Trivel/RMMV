@@ -57,7 +57,10 @@
 			for (var key in sceneBackgroundList) {
 				if (sceneBackgroundList.hasOwnProperty(key)) {
 					if (this.constructor === eval(key)) 
+					{
 						this._backgroundSprite.bitmap = ImageManager.loadSystem(sceneBackgroundList[key]);
+						break;
+					}
 				}
 			}
 		}
