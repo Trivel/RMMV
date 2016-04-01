@@ -65,11 +65,11 @@
 * Examples:
 * MapNode Enter
 * 
-* MapNode Show "Forest"
-* MapNode Hide "Forest"
+* MapNode Show Forest
+* MapNode Hide Forest
 *
-* MapNode Lock "Graveyard"
-* Mapnode Unlock "StoneFarm"
+* MapNode Lock Graveyard
+* Mapnode Unlock StoneFarm
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
