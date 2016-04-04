@@ -29,7 +29,7 @@
 * Credit Mr. Trivel if using this plugin in your project.
 * Free for commercial and non-commercial projects.
 * --------------------------------------------------------------------------------
-* Version 0.0
+* Version 1.0
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -57,14 +57,12 @@
 * --------------------------------------------------------------------------------
 * InventoryLimit Add [AMOUNT] - Adds Amount to limit.
 * InventoryLimit Sub [AMOUNT] - Removes Amount from limit.
-* InventoryLimit Set [AMOUNT] - Sets Amount as new limit.
 * InventoryLimit Ignore - Ignores inventory limit when adding items
 * InventoryLimit StopIgnore - Stops ignoring inventory limit when adding items
 *
 * Examples:
 * InventoryLimit Add 10
 * InventoryLimit Sub 5
-* InventoryLimit Set 100
 * InventoryLimit Ignore
 * InventoryLimit StopIgnore
 * --------------------------------------------------------------------------------
@@ -80,6 +78,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.0 - Release
 */
 
 (function() {
@@ -87,6 +86,36 @@
 	var paramLimitMode = String(parameters['Limit Mode'] || "number");
 	var paramDefaultLimit = Number(parameters['Default Limit'] || 30);
 	var paramDefaultWeight = Number(parameters['Default Weight'] || 1);
+
+	//--------------------------------------------------------------------------
+	// Game_Interpreter
+	// 
+	
+	var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
+	Game_Interpreter.prototype.pluginCommand = function(command, args) {
+		_Game_Interpreter_pluginCommand.call(this, command, args);
+		if (command.toLowerCase() === "inventorylimit") {
+			switch (args[0].toUpperCase())
+			{
+				case 'ADD':
+				{
+					$gameParty.increaseInventorySpace(Number(args[1]));
+				} break;
+				case 'SUB':
+				{
+					$gameParty.decreaseInventorySpace(Number(args[1]));
+				} break;
+				case 'IGNORE':
+				{
+					$gameParty._ignoreInvLimit = true;
+				} break;
+				case 'STOPIGNORE':
+				{
+					$gameParty._ignoreInvLimit = false;
+				} break;				
+			}
+		}
+	};
 
 	//--------------------------------------------------------------------------
 	// Game_Party
