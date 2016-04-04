@@ -20,6 +20,16 @@
 * @desc If using 'weight' mode, how much items weight by default?
 * Default: 1
 * @default 1
+*
+* @param Show Window
+* @desc Show inventory limit window in item menu? true/false
+* Default: True
+* @default True
+*
+* @param Limit Text
+* @desc How will limit be named in Window?
+* Default: Limit:
+* @default Limit:
 * 
 * @help 
 * --------------------------------------------------------------------------------
@@ -86,6 +96,8 @@
 	var paramLimitMode = String(parameters['Limit Mode'] || "number");
 	var paramDefaultLimit = Number(parameters['Default Limit'] || 30);
 	var paramDefaultWeight = Number(parameters['Default Weight'] || 1);
+	var paramShowWindow = (parameters['Show Window'] || "true").toLowerCase() === "true";
+	var paramLimitText = String(parameters['Limit Text'] || "Limit:");
 
 	//--------------------------------------------------------------------------
 	// Game_Interpreter
@@ -213,5 +225,57 @@
 				bonus += Number(this.equips()[i].meta.InvLimitChange);
 		}
 		return bonus;
+	};
+
+	//--------------------------------------------------------------------------
+	// Window_InventoryLimit
+	//
+	// Shows how much is left.
+	
+	function Window_InventoryLimit() {
+		this.initialize.apply(this, arguments);	
+	};
+	
+	Window_InventoryLimit.prototype = Object.create(Window_Base.prototype);
+	Window_InventoryLimit.prototype.constructor = Window_InventoryLimit;
+	
+	Window_InventoryLimit.prototype.initialize = function(x, y, w, h) {
+		Window_Base.prototype.initialize.call(this, x, y, w, h);
+		this.refresh();
+	};
+	
+	Window_InventoryLimit.prototype.refresh = function() {
+		this.contents.clear();
+		var u = $gameParty.getInventorySpaceUsed();
+		var t = $gameParty.getInventorySpaceTotal();
+		this.drawText(paramLimitText + " " + u + "/" + t, 0, 0);
+	};
+
+	//--------------------------------------------------------------------------
+	// Scene_Item
+	// 
+
+	var _Scene_Item_create = Scene_Item.prototype.create;
+	Scene_Item.prototype.create = function() {
+		_Scene_Item_create.call(this);
+		if (paramShowWindow)
+			this.createLimitWindow();
+	};
+
+	Scene_Item.prototype.createLimitWindow = function() {
+		var wx = this._itemWindow.x;
+		var ww = this._itemWindow.width;
+		var wh = this._itemWindow.fittingHeight(1);
+		this._itemWindow.height = this._itemWindow.height - wh;
+		this._itemWindow.refresh();
+		var wy = this._itemWindow.y + this._itemWindow.height;
+		this._invLimitWindow = new Window_InventoryLimit(wx, wy, ww, wh);
+		this.addWindow(this._invLimitWindow);
+	};
+
+	var _Scene_Item_useItem = Scene_Item.prototype.useItem;
+	Scene_Item.prototype.useItem = function() {
+		_Scene_Item_useItem.call(this);
+		if (this._invLimitWindow) this._invLimitWindow.refresh();
 	};
 })();
