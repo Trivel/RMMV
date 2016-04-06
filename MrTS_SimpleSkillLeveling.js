@@ -34,7 +34,7 @@
 * 
 * Examples:
 * <LevelUpTo: 5, 25, 0>
-* <LeveLUpTo: 8, 10>
+* <LevelUpTo: 8, 10>
 *
 * <LevelUpTo: 5, 20, 0>
 * <LevelUpRequire: 7, 5>
