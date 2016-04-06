@@ -3,6 +3,7 @@
 //=============================================================================
 //
 var Imported = Imported || {};
+Imported.MrTS_HPMPTPMulticolorGauges = true;
 
 /*:
 * @plugindesc Allows to set more than starting/ending color for HP/MP/TP gauges.
@@ -46,12 +47,14 @@ var Imported = Imported || {};
 * Credit Mr. Trivel if using this plugin in your project.
 * Free for commercial and non-commercial projects.
 * --------------------------------------------------------------------------------
-* Version 1.1
+* Version 1.2
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.2 - Compatibility with MrTS_DifferentMPColorsAndNames
+*     - Crash fix with MP/TP bars
 * 1.1 - Crash fix, disabling multicolor bars from plugin parameters added.
 * 1.0 - Release
 */
@@ -71,14 +74,21 @@ var Imported = Imported || {};
 
 	var _WindowBase_drawActorHp = Window_Base.prototype.drawActorHp;
 	Window_Base.prototype.drawActorHp = function(actor, x, y, width) {
-		if (parArrHP.length > 0 && paramUseHP)
+		var hpColorArray = parArrHP;
+		if (Imported.MrTS_DifferentHpMpTpColorsAndNames)
+		{
+			this.setHpGaugeColors(actor.actorId());
+			hpColorArray = this._hpGaugeColors;
+		}
+		 
+		if (hpColorArray.length > 0 && paramUseHP)
 		{
 			width = width || 186;
-			var offset = Math.floor(width/(parArrHP.length-1));
-			for (var i = 0; i < parArrHP.length-1; i++) {
-				var color1 = parArrHP[i];
-				var color2 = parArrHP[i+1];
-				this.drawGauge(x + offset*i - (i !== 0 && i !== parArrHP.length-1 ? 1 : 0), y, offset + (i !== 0 && i !== parArrHP.length-1 ? 1 : 0), 1.00, color1, color2);
+			var offset = Math.floor(width/(hpColorArray.length-1));
+			for (var i = 0; i < hpColorArray.length-1; i++) {
+				var color1 = hpColorArray[i];
+				var color2 = hpColorArray[i+1];
+				this.drawGauge(x + offset*i - (i !== 0 && i !== hpColorArray.length-1 ? 1 : 0), y, offset + (i !== 0 && i !== hpColorArray.length-1 ? 1 : 0), 1.00, color1, color2);
 			}
 			var rate = 1.00 - actor.hpRate();
 			var amount = width * rate;
@@ -96,14 +106,21 @@ var Imported = Imported || {};
 
 	var _WindowBase_drawActorMp = Window_Base.prototype.drawActorMp;
 	Window_Base.prototype.drawActorMp = function(actor, x, y, width) {
-		if (parArrMP.length > 0 && paramUseMP)
+		var mpColorArray = parArrMP;
+		if (Imported.MrTS_DifferentHpMpTpColorsAndNames)
+		{
+			this.setMpGaugeColors(actor.actorId());
+			mpColorArray = this._mpGaugeColors;
+		}
+
+		if (mpColorArray.length > 0 && paramUseMP)
 		{
 			width = width || 186;
-			var offset = Math.floor(width/(parArrMP.length-1));
-			for (var i = 0; i < parArrMP.length-1; i++) {
-				var color1 = parArrMP[i];
-				var color2 = parArrMP[i+1];
-				this.drawGauge(x + offset*i - (i !== 0 && i !== parArrMP.length-1 ? 1 : 0), y, offset + (i !== 0 && i !== parArrHP.length-1 ? 1 : 0), 1.00, color1, color2);
+			var offset = Math.floor(width/(mpColorArray.length-1));
+			for (var i = 0; i < mpColorArray.length-1; i++) {
+				var color1 = mpColorArray[i];
+				var color2 = mpColorArray[i+1];
+				this.drawGauge(x + offset*i - (i !== 0 && i !== mpColorArray.length-1 ? 1 : 0), y, offset + (i !== 0 && i !== mpColorArray.length-1 ? 1 : 0), 1.00, color1, color2);
 			}
 			var rate = 1.00 - actor.mpRate();
 			var amount = width * rate;
@@ -121,14 +138,22 @@ var Imported = Imported || {};
 
 	var _WindowBase_drawActorTp = Window_Base.prototype.drawActorTp;
 	Window_Base.prototype.drawActorTp = function(actor, x, y, width) {
-		if (parArrTP.length > 0 && paramUseTP)
+		var tpColorArray = parArrTP;
+		if (Imported.MrTS_DifferentHpMpTpColorsAndNames)
+		{
+			this.setTpGaugeColors(actor.actorId());
+			tpColorArray = this._tpGaugeColors;
+		}
+
+		if (tpColorArray.length > 0 && paramUseTP)
 		{
 			width = width || 186;
-			var offset = Math.floor(width/(parArrTP.length-1));
-			for (var i = 0; i < parArrTP.length-1; i++) {
-				var color1 = parArrTP[i];
-				var color2 = parArrTP[i+1];
-				this.drawGauge(x + offset*i - (i !== 0 && i !== parArrTP.length-1 ? 1 : 0), y, offset + (i !== 0 && i !== parArrHP.length-1 ? 1 : 0), 1.00, color1, color2);
+			var offset = Math.floor(width/(tpColorArray.length-1));
+
+			for (var i = 0; i < tpColorArray.length-1; i++) {
+				var color1 = tpColorArray[i];
+				var color2 = tpColorArray[i+1];
+				this.drawGauge(x + offset*i - (i !== 0 && i !== tpColorArray.length-1 ? 1 : 0), y, offset + (i !== 0 && i !== tpColorArray.length-1 ? 1 : 0), 1.00, color1, color2);
 			}
 			var rate = 1.00 - actor.tpRate();
 			var amount = width * rate;
