@@ -20,6 +20,11 @@
 * @desc If showing in game window, how many frames will it last?
 * Default: 80
 * @default 80
+*
+* @param Notification Height
+* @desc How tall is the notification?
+* Default: 40
+* @default 40
 * 
 * @help 
 * --------------------------------------------------------------------------------
@@ -29,7 +34,7 @@
 * Credit Mr. Trivel if using this plugin in your project.
 * Free for commercial and non-commercial projects.
 * --------------------------------------------------------------------------------
-* Version 1.1
+* Version 1.2
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -39,6 +44,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.2 - Added plugin parameter to change height of notification.
 * 1.1 - Added Common Event notifications in window.
 * 1.0 - Release
 */
@@ -48,6 +54,7 @@
 	var paramConsole = Boolean((parameters['Console'] || "true").toLowerCase() === "true");
 	var paramWindow = Boolean((parameters['Window'] || "true").toLowerCase() === "true");
 	var paramWindowFrames = Number(parameters['Window Frames'] || 80);
+	var paramNotificationHeight = Number(parameters['Notification Height'] || 40);
 
 	var _GameInterpreter_setupChild = Game_Interpreter.prototype.setupChild;
 	Game_Interpreter.prototype.setupChild = function(list, eventId) {
@@ -109,14 +116,15 @@
 					var name = $dataCommonEvents[ce].name;
 					var sprite = new Sprite();
 					var bitmap = new Bitmap(1, 1);
+					bitmap.fontSize = paramNotificationHeight - 4;
 					var txt = "#" + ce + " " + name;
 					var tw = Math.ceil(bitmap.measureTextWidth(txt));
-					bitmap.resize(tw + 4, 40);
+					bitmap.resize(tw + 4, paramNotificationHeight);
 					sprite.bitmap = bitmap;
 					bitmap.fillAll("#282828");
-					bitmap.drawText(txt, 2, 0, bitmap.width-4, 40, 'left');
+					bitmap.drawText(txt, 2, 0, bitmap.width-4, paramNotificationHeight, 'left');
 					sprite.x = -sprite.width;
-					sprite.y = this._eventDebugQueue.length*40;
+					sprite.y = this._eventDebugQueue.length*paramNotificationHeight;
 					this.addChild(sprite);
 					var obj = {
 						timer: paramWindowFrames, 
@@ -163,7 +171,7 @@
 							} 
 						} break;						
 					}
-					ced.yGoal = this._eventDebugQueue.indexOf(ced) * 40;
+					ced.yGoal = this._eventDebugQueue.indexOf(ced) * paramNotificationHeight;
 					var dtY = ced.yGoal - ced.floatY;
 					ced.floatY += dtY * 0.05;
 					ced.image.y = Math.floor(ced.floatY);
