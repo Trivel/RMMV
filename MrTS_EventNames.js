@@ -82,7 +82,7 @@
 *     - Added X and Y offset for Text/Pictures.
 *     - Added Font name, size tags.
 *     - Added plugin commands.
-*     - Fixed labels being shown out of range for short moment after scene change.
+*     - Fixed names being shown out of range for short moment after scene change.
 * 1.5 - Added Icon drawing, cleaned up the code.
 * 1.4 - Added Fade in and Fade out effects for event names and pictures.
 *     - Fixed layering of pictures and names. They're properly above now.
