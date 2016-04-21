@@ -25,48 +25,51 @@
 * Free for non-commercial projects.
 * For commercial use contact Mr. Trivel.
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
 * Plugin Commands
 * --------------------------------------------------------------------------------
-* DynamicShop Enter - Enters the shop of this plugin so there's normal shop still
-*  available.
-* DynamicShop Unlock [TYPE] [ID] - Unlocks item to be permanently available in the
-*  shop.
+* DynamicShop Enter [SHOP_ID] - Enters the shop of this plugin
+* DynamicShop Unlock [SHOP_ID] [TYPE] [ID] - Unlocks item to be permanently 
+*  available in the shop.
+* [SHOP_ID] - ID of the shop
 * [TYPE] - i, a, w - i: item, a: armor, w: weapon
 * [ID] - ID of the item in database
 *
 * Examples:
-* DynamicShop Unlock w 55
-* DynamicShop Unlock a 15
+* DynamicShop Enter 1
+* DynamicShop Unlock 1 w 55
+* DynamicShop Unlock 2 a 15
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
 * Setting up Recipes
 * --------------------------------------------------------------------------------
-* Items tagged with any of these tags will be available in the shop.
-* <InShopByDefault> - Will always appear in shop.
-* <InShopByCommand> - Will appear once unlocked with plugin command.
+* Items tagged with any of these tags will be available in the shop. You can have
+*  1 tag for 1 shop.
+* <InShopByDefault: [SHOP_ID]> - Will always appear in shop.
+* <InShopByCommand: [SHOP_ID]> - Will appear once unlocked with plugin command.
 *
 * And the last is little longer, it takes multiple lines:
 * <InShopByRecipe>
 * [TYPE] [ID] [QUANTITY]
-* </InShopByRecipe>
+* </InShopByRecipe: [SHOP_ID]>
 *
+* [SHOP_ID] - ID of the shop
 * [TYPE] - Item type, i, a, w - i:item, a:armor, w:weapon
 * [ID] - ID of the item in database
 * [QUANTITY] - How many have to be sold in total
 * There can be any number of lines with item requirements.
 *
 * Examples:
-* <InShopByRecipe>
+* <InShopByRecipe: 1>
 * i 5 100
 * i 2 50
 * </InShopByRecipe>
 *
-* <InShopByRecipe>
+* <InShopByRecipe: 3>
 * a 12 1
 * w 2 1
 * i 15 10
@@ -76,6 +79,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Multiple unlock shops added.
 * 1.0 - Release
 */
 
@@ -97,11 +101,13 @@
 			{
 				case 'ENTER':
 				{
+					$gameSystem._unlockShopId = Number(args[1]);
 					SceneManager.push(Scene_DynamicShop);
 					SceneManager.prepareNextScene($gameSystem.getUnlockedItems(), false);
 				} break;
 				case 'UNLOCK':
 				{
+					$gameSystem._unlockShopId = Number(args[1]);
 					$gameSystem.unlockItemRecipe(args[1], Number(args[2]));
 				} break;
 				
@@ -115,34 +121,65 @@
 	};
 
 	Game_System.prototype.setupItemRecipes = function() {
-		this._allItemRecipes = [];
-		this._allWeaponRecipes = [];
-		this._allArmorRecipes = [];
-		this._soldItems = [];
-		this._soldWeapons = [];
-		this._soldArmors = [];
-
-		this.parseUnlockReqs(this._allItemRecipes, $dataItems);
-		this.parseUnlockReqs(this._allWeaponRecipes, $dataWeapons);
-		this.parseUnlockReqs(this._allArmorRecipes, $dataArmors);
+		this._unlockShops = {};
+		this._unlockShopId = 1;
+		this.parseUnlockReqs("i", $dataItems);
+		this.parseUnlockReqs("w", $dataWeapons);
+		this.parseUnlockReqs("a", $dataArmors);
 	};
 
-	Game_System.prototype.parseUnlockReqs = function(array, data) {
-		var regexStart = /<InShopByRecipe>/i;
+	Game_System.prototype.createNewUnlockShop = function() {
+		var o = {};
+		o._allItemRecipes = [];
+		o._allWeaponRecipes = [];
+		o._allArmorRecipes = [];
+		o._soldItems = [];
+		o._soldWeapons = [];
+		o._soldArmors = [];
+		return o;
+	};
+
+	Game_System.prototype.parseUnlockReqs = function(type, data) {
+		var regexStart = /<InShopByRecipe:[ ]*(\d+)>/i;
 		var regexEnd = /<\/InShopByRecipe>/i;
 		var regexReq = /([awi]){1}[ ]+(\d+)[ ]+(\d+)/i;
+		var o = this._unlockShops;
 
 		for (var i = 0; i < data.length; i++) {
 			var item = data[i];
 			if (!item) continue;
 			if (item.meta.InShopByDefault)
 			{
+				var id = Number(item.meta.InShopByDefault);
+				if (!o[id]) o[id] = this.createNewUnlockShop();
+				if (type === "i")
+					var array = o[id]._allItemRecipes;
+				else if (type === "w")
+					var array = o[id]._allWeaponRecipes;
+				else if (type === "a")
+					var array = o[id]._allArmorRecipes;
 				array[i] = [true, []];
 			} else if (item.meta.InShopByCommand)
 			{
+				var id = Number(item.meta.InShopByCommand);
+				if (!o[id]) o[id] = this.createNewUnlockShop();
+				if (type === "i")
+					var array = o[id]._allItemRecipes;
+				else if (type === "w")
+					var array = o[id]._allWeaponRecipes;
+				else if (type === "a")
+					var array = o[id]._allArmorRecipes;
 				array[i] = [false, []];
 			} else if (item.meta.InShopByRecipe)
 			{
+				var id = Number(item.meta.InShopByRecipe);
+				if (!o[id]) o[id] = this.createNewUnlockShop();
+				if (type === "i")
+					var array = o[id]._allItemRecipes;
+				else if (type === "w")
+					var array = o[id]._allWeaponRecipes;
+				else if (type === "a")
+					var array = o[id]._allArmorRecipes;
 				array[i] = [false, []];
 				var lines = item.note.split(/[\r\n]/);
 				var started = false;
@@ -173,70 +210,73 @@
 	};
 
 	Game_System.prototype.unlockItemRecipe = function(type, id) {
+		var o = this._unlockShops[this._unlockShopId];
 		switch(type)
 		{
 			case 'w':
 			{
-				this._allWeaponRecipes[id][0] = true;
+				o._allWeaponRecipes[id][0] = true;
 			} break;
 			case 'a':
 			{
-				this._allArmorRecipes[id][0] = true;
+				o._allArmorRecipes[id][0] = true;
 			} break;
 			case 'i':
 			{
-				this._allItemRecipes[id][0] = true;
+				o._allItemRecipes[id][0] = true;
 			} break;
 			
 		}
 	};
 
 	Game_System.prototype.getUnlockedItems = function() {
+		var o = this._unlockShops[this._unlockShopId];
 		var items = [];
-		for (var i = 0; i < this._allItemRecipes.length; i++) {
-			if (this._allItemRecipes[i] && this._allItemRecipes[i][0])
+		for (var i = 0; i < o._allItemRecipes.length; i++) {
+			if (o._allItemRecipes[i] && o._allItemRecipes[i][0])
 				items.push([0, i, 0, 0]);
 		}
-		for (var i = 0; i < this._allWeaponRecipes.length; i++) {
-			if (this._allWeaponRecipes[i] && this._allWeaponRecipes[i][0])
+		for (var i = 0; i < o._allWeaponRecipes.length; i++) {
+			if (o._allWeaponRecipes[i] && o._allWeaponRecipes[i][0])
 				items.push([1, i, 0, 0]);
 		}
-		for (var i = 0; i < this._allArmorRecipes.length; i++) {
-			if (this._allArmorRecipes[i] && this._allArmorRecipes[i][0])
+		for (var i = 0; i < o._allArmorRecipes.length; i++) {
+			if (o._allArmorRecipes[i] && o._allArmorRecipes[i][0])
 				items.push([2, i, 0, 0]);
 		}
 		return items;
 	};
 
 	Game_System.prototype.addSoldItems = function(item, number) {
+		var o = this._unlockShops[this._unlockShopId];
 		var type = null
 		if (DataManager.isItem(item))
 		{
-			if (!this._soldItems[item.id]) this._soldItems[item.id] = 0;
-			this._soldItems[item.id] += number;
+			if (!o._soldItems[item.id]) o._soldItems[item.id] = 0;
+			o._soldItems[item.id] += number;
 		}
 		else if (DataManager.isWeapon(item))
 		{
-			if (!this._soldWeapons[item.id]) this._soldWeapons[item.id] = 0;
-			this._soldWeapons[item.id] += number;
+			if (!o._soldWeapons[item.id]) o._soldWeapons[item.id] = 0;
+			o._soldWeapons[item.id] += number;
 		}
 		else if (DataManager.isArmor(item))
 		{
-			if (!this._soldArmors[item.id]) this._soldArmors[item.id] = 0;
-			this._soldArmors[item.id] += number;
+			if (!o._soldArmors[item.id]) o._soldArmors[item.id] = 0;
+			o._soldArmors[item.id] += number;
 		}
 
 		var items = [];
 		var unlocked = [];
-		unlocked = this.tryToUnlockRecipes(this._allItemRecipes);
+		unlocked = this.tryToUnlockRecipes(o._allItemRecipes);
 		for (var i = 0; i < unlocked.length; i++) {
 			items.push($dataItems[unlocked[i]]);
 		}
-		unlocked = this.tryToUnlockRecipes(this._allArmorRecipes);
+		unlocked = this.tryToUnlockRecipes(o._allArmorRecipes);
 		for (var i = 0; i < unlocked.length; i++) {
 			items.push($dataArmors[unlocked[i]]);
 		}
-		unlocked = this.tryToUnlockRecipes(this._allWeaponRecipes);
+		unlocked = this.tryToUnlockRecipes(o._allWeaponRecipes);
 		for (var i = 0; i < unlocked.length; i++) {
 			items.push($dataWeapons[unlocked[i]]);
 		}
@@ -244,6 +284,7 @@
 	};
 
 	Game_System.prototype.tryToUnlockRecipes = function(array) {
+		var o = this._unlockShops[this._unlockShopId];
 		var unlocked = [];
 		for (var i = 0; i < array.length; i++) {
 			if (!array[i]) continue;
@@ -258,17 +299,17 @@
 				{
 					case 'i':
 					{
-						if (!this._soldItems[id] || this._soldItems[id] < quantity)
+						if (!o._soldItems[id] || o._soldItems[id] < quantity)
 							canUnlock = false
 					} break;
 					case 'w':
 					{
-						if (!this._soldWeapons[id] || this._soldWeapons[id] < quantity)
+						if (!o._soldWeapons[id] || o._soldWeapons[id] < quantity)
 							canUnlock = false
 					} break;
 					case 'a':
 					{
-						if (!this._soldArmors[id] || this._soldArmors[id] < quantity)
+						if (!o._soldArmors[id] || o._soldArmors[id] < quantity)
 							canUnlock = false
 					} break;
 				}
