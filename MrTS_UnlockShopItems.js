@@ -108,7 +108,7 @@
 				case 'UNLOCK':
 				{
 					$gameSystem._unlockShopId = Number(args[1]);
-					$gameSystem.unlockItemRecipe(args[1], Number(args[2]));
+					$gameSystem.unlockItemRecipe(args[2], Number(args[3]));
 				} break;
 				
 			}
