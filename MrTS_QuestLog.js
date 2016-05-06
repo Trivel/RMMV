@@ -157,7 +157,7 @@
 * Free for non-commercial projects.
 * For commercial use contact Mr. Trivel.
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.0a
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -238,6 +238,7 @@
 * Version History
 * --------------------------------------------------------------------------------
 * 1.0 - Release
+* 1.0a - Window size bug fix.
 */
 
 var $dataQuests = null;
@@ -270,10 +271,10 @@ DataManager._databaseFiles.push({name: '$dataQuests', src: 'Quests.json'});
 	var paramQuestListY = String(parameters['Quest List Y'] || "Graphics.boxHeight/2 - 624/2 + 72");
 	var paramQuestListWidth = String(parameters['Quest List Width'] || "266");
 	var paramQuestListHeight = String(parameters['Quest List Height'] || "624 - 72");
-	var paramQuestDescriptionX = String(parameters['Quest Description X'] || "Graphics.boxWidth/2 - 816/2 + 266");
-	var paramQuestDescriptionY = String(parameters['Quest Description Y'] || "Graphics.boxHeight/2 - 624/2");
-	var paramQuestDescriptionWidth = String(parameters['Quest Description Width'] || "816-266");
-	var paramQuestDescriptionHeight = String(parameters['Quest Description Height'] || "624");
+	var paramQuestDescriptionX = String(parameters['Description X'] || "Graphics.boxWidth/2 - 816/2 + 266");
+	var paramQuestDescriptionY = String(parameters['Description Y'] || "Graphics.boxHeight/2 - 624/2");
+	var paramQuestDescriptionWidth = String(parameters['Description Width'] || "816-266");
+	var paramQuestDescriptionHeight = String(parameters['Description Height'] || "624");
 
 	//--------------------------------------------------------------------------
 	// Game_Interpreter
