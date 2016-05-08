@@ -15,7 +15,7 @@
 * Free for non-commercial projects.
 * For commercial use contact Mr. Trivel.
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.1
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -31,6 +31,8 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Fixed a bug with accessing wrong commands.
+*     - Fixed a crash with unidentified coordinates.
 * 1.0 - Release
 */
 
@@ -233,5 +235,10 @@
 			return df(cs[index].x, cs[index].y, cs[a].x, cs[a].y) - df(cs[index].x, cs[index].y, cs[b].x, cs[b].y)
 		});
 		if (lowerWithX.length > 0) this.select(lowerWithX[0]);
+	};
+
+	Window_MenuCommand.prototype.needsCommand = function(name) {
+	    if (pictureList[name]) return true;
+	    return false;
 	};
 })();
