@@ -27,9 +27,9 @@
 * [PERCENT]: 0.01 - 1%, 0.5 - 50%, -0.25 - -25%
 * 
 * Weapon Efficiency - battlers deal more damage while wielding that weapon type.
-* Element Effiency - battlers deal more damage with skills of that element.
+* Element Efficiency - battlers deal more damage with skills of that element.
 * Skill Type Efficiency - battlers deal more damage with skills of that type.
-* Overall Effiency - battlers just deal more damage
+* Overall Efficiency - battlers just deal more damage
 *
 * Examples:
 * <WeaponEfficiency: 2, 0.5>
