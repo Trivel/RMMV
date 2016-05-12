@@ -32,6 +32,7 @@
 * 1.1 - Fixed actor image positions.
 *     - Added actor states into windows.
 *     - Fixed party window jumping.
+*     - Hid Actor Command Window when selecting target.
 * 1.0 - Release
 */
 
@@ -164,6 +165,10 @@
 	Scene_Battle.prototype.updateWindowPositions = function() {
 	    if (BattleManager.isInputting()) {
 	    	this.updateActorCommandWindowPosition();
+	    	if ((this._actorWindow.active || this._enemyWindow.active) && !this._actorCommandWindow.isClosing() && !this._actorCommandWindow.isClosed())
+	    		this._actorCommandWindow.close();
+	    	else if (!this._actorWindow.active && !this._enemyWindow.active && !this._actorCommandWindow.isOpening() && !this._actorCommandWindow.isOpen())
+	    		this._actorCommandWindow.open();
 	    }
 	};
 
