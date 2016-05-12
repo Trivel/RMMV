@@ -14,7 +14,7 @@
 * Credit Mr. Trivel if using this plugin in your project.
 * Free for commercial and non-commercial projects.
 * --------------------------------------------------------------------------------
-* Version 1.1
+* Version 1.1a
 * --------------------------------------------------------------------------------
 * 
 * --------------------------------------------------------------------------------
@@ -29,6 +29,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1a- Fix for Actor Command Window when going back to party command window.
 * 1.1 - Fixed actor image positions.
 *     - Added actor states into windows.
 *     - Fixed party window jumping.
@@ -173,7 +174,7 @@
 	    	this.updateActorCommandWindowPosition();
 	    	if ((this._actorWindow.active || this._enemyWindow.active) && !this._actorCommandWindow.isClosing() && !this._actorCommandWindow.isClosed())
 	    		this._actorCommandWindow.close();
-	    	else if (!this._actorWindow.active && !this._enemyWindow.active && !this._actorCommandWindow.isOpening() && !this._actorCommandWindow.isOpen())
+	    	else if (!this._actorWindow.active && !this._enemyWindow.active && !this._actorCommandWindow.isOpening() && !this._actorCommandWindow.isOpen() && this._actorCommandWindow.active)
 	    		this._actorCommandWindow.open();
 	    }
 	};
