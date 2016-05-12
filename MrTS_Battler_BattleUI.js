@@ -162,6 +162,12 @@
 	    this.contents.clearRect(rect.x, rect.y, rect.width, rect.height);
 	};
 
+	var _Scene_Battle_selectNextCommand = Scene_Battle.prototype.selectNextCommand;
+	Scene_Battle.prototype.selectNextCommand = function() {
+		_Scene_Battle_selectNextCommand.call(this);
+		this.updateActorCommandWindowPosition();
+	};
+
 	Scene_Battle.prototype.updateWindowPositions = function() {
 	    if (BattleManager.isInputting()) {
 	    	this.updateActorCommandWindowPosition();
