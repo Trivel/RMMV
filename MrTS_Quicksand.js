@@ -15,7 +15,7 @@
 * Free for non-commercial projects.
 * For commercial use contact Mr. Trivel.
 * --------------------------------------------------------------------------------
-* Version 1.2
+* Version 1.3
 * --------------------------------------------------------------------------------
 ** 
 * --------------------------------------------------------------------------------
@@ -59,6 +59,7 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.3 - Fixed sinking into tiles that aren't tagged as Bush in database.
 * 1.2 - Removed redundant tags, more options on sink in.
 * 1.1 - Fixed values staying false.
 * 1.0 - Release
@@ -359,23 +360,37 @@
 		if (this._cutOff)
 		{
 			if (this._bushDepth > 0) {
-				this._lowerBody.height -= this._sunk;
-				this._lowerBody.y = -this._sunk;
+				this._lowerBody.height -= Math.floor(this._sunk);
+				this._lowerBody.y = Math.floor(-this._sunk);
 				if (this._lowerBody.height < 0)
 				{
 					this._upperBody.opacity = 176;
-					this._upperBody.height += this._lowerBody.height;
+					this._upperBody.height += Math.floor(this._lowerBody.height);
 
-				this._upperBody.y = -this._sunk;
+					this._upperBody.y = Math.floor(-this._sunk);
 					this._lowerBody.height = 0;
 				}
 			}
 			else
 			{
-				if (this._upperBody) this._upperBody.opacity = 255;
-				this.height -= this._sunk;
+				if (this._upperBody) {
+					this._upperBody.opacity = 255;
+				}
+				this.height -= Math.floor(this._sunk);
 			}
 		}
+	};
+
+	var _Sprite_Character_updatePosition = Sprite_Character.prototype.updatePosition;
+	Sprite_Character.prototype.updatePosition = function() {
+	    this.x = this._character.screenX();
+	    this.z = this._character.screenZ();
+		if (this._cutOff && this._bushDepth <= 0)
+		{
+			this.y = this._character.screenY() + Math.floor(-this._sunk);
+		} 
+		else 
+			this.y = this._character.screenY();
 	};
 
 	var _SpriteCharacter_updateOther = Sprite_Character.prototype.updateOther;
