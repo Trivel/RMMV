@@ -8,9 +8,15 @@
 * 
 * @help 
 * --------------------------------------------------------------------------------
-* Free for commercial and non commercial use.
-* Version 1.0
+* Terms of Use
 * --------------------------------------------------------------------------------
+* Don't remove the header or claim that you wrote this plugin.
+* Credit Mr. Trivel if using this plugin in your project.
+* Free for commercial and non-commercial projects.
+* --------------------------------------------------------------------------------
+* Version 1.1
+* --------------------------------------------------------------------------------
+* 
 * --------------------------------------------------------------------------------
 *  Actor Images
 * --------------------------------------------------------------------------------
@@ -23,17 +29,25 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1 - Fixed actor image positions.
+*     - Added actor states into windows.
+*     - Fixed party window jumping.
 * 1.0 - Release
 */
 
 (function() {
-	var parameters = PluginManager.parameters('MrTS_Battler_BattleUI');
 
 	Window_BattleStatus.prototype.initialize = function() {
 	    var width = this.windowWidth();
 	    var height = this.windowHeight();
 	    var x = Graphics.boxWidth - width;
 	    var y = Graphics.boxHeight - height;
+	    this._actorIcons = [];
+	    for (var i = 0; i < $gameParty.maxBattleMembers(); i++) {
+	    	this._actorIcons[i] = 0;
+	    }
+	    this._iconTimer = 0;
+	    this._maxIconTimer = 60;
 	    Window_Selectable.prototype.initialize.call(this, x, y, width, height);
 	    this.refresh();
 	    this.openness = 0;
@@ -100,11 +114,46 @@
 		    var lineHeight = this.lineHeight();
 		    if (!$dataSystem.optDisplayTp) y += lineHeight;
 		    this.drawActorName(actor, x+20, y);
+		    this.drawActorIcon(index);
 		    this.drawActorHp(actor, x+15, y + lineHeight * 1, rect.width -30);
 	    	this.drawActorMp(actor, x+15, y + lineHeight * 2, rect.width -30);
 		    if ($dataSystem.optDisplayTp)
 		    	this.drawActorTp(actor, x+15, y + lineHeight * 3, rect.width -30);
 	    }
+	};
+
+	Window_BattleStatus.prototype.drawActorIcon = function(index) {
+		var actor = $gameParty.battleMembers()[index];
+		var rect = this.itemRect(index);
+		if (actor)
+		{
+			var icons = actor.allIcons();
+			if (icons.length > 0)
+			{
+				var x = rect.x;
+				var y = rect.y;
+				var width = rect.width - x - this.textPadding();
+				if (this._actorIcons[index] >= icons.length)
+					this._actorIcons[index] = 0;
+
+				this.contents.clearRect(x + rect.width - 50, y + 2, 40, Window_Base._iconHeight);
+				this.drawIcon(icons[this._actorIcons[index]], x + rect.width - 50, y + 2);
+			}
+		}
+	};
+
+	var _Window_BattleStatus_update = Window_BattleStatus.prototype.update;
+	Window_BattleStatus.prototype.update = function() {
+		_Window_BattleStatus_update.call(this);
+		this._iconTimer++;
+		if (this._iconTimer >= this._maxIconTimer)
+		{
+			for (var i = 0; i < this._actorIcons.length; i++) {
+				this._actorIcons[i]++;
+				this.drawActorIcon(i);
+			}
+			this._iconTimer = 0;
+		}
 	};
 
 	Window_Selectable.prototype.clearItem = function(index) {
@@ -113,13 +162,18 @@
 	};
 
 	Scene_Battle.prototype.updateWindowPositions = function() {
-	    var statusX = 0;
 	    if (BattleManager.isInputting()) {
-	    	var rect = this._statusWindow.itemRect(this._statusWindow.index());
-	    	var x = this._statusWindow.x + this._statusWindow.standardPadding() + rect.x + rect.width/2 - this._actorCommandWindow.width/2;
-	    	this._actorCommandWindow.x = x;
-	    	this._actorCommandWindow.y = this._statusWindow.y - this._actorCommandWindow.height;
+	    	this.updateActorCommandWindowPosition();
 	    }
+	};
+
+	Scene_Battle.prototype.updateActorCommandWindowPosition = function() {
+		var index = this._statusWindow.index();
+		if (index < 0) index = 0;
+    	var rect = this._statusWindow.itemRect(index);
+    	var x = this._statusWindow.x + this._statusWindow.standardPadding() + rect.x + rect.width/2 - this._actorCommandWindow.width/2;
+    	this._actorCommandWindow.x = x;
+    	this._actorCommandWindow.y = this._statusWindow.y - this._actorCommandWindow.height;
 	};
 
 	var _SceneBattle_createStatusWindow = Scene_Battle.prototype.createStatusWindow;
@@ -170,8 +224,7 @@
 			for (var i = 0; i < this._actorSprites.length; i++) {
 				if (this._actorSpritesFitted[i] === true) continue;
 		    	var rect = this.itemRect2(i);
-
-		    	this._actorSprites[i].x = rect.x + rect.width/2 - this._actorSprites[i].width/2;
+		    	this._actorSprites[i].x = this.x + rect.x + rect.width/2 - this._actorSprites[i].width/2;
 		    	this._actorSprites[i].y = this.y + this.height - this._actorSprites[i].height;
 		    	this._actorSprites[i].z = -10;
 		    	this._actorSpritesFitted[i] = true;
