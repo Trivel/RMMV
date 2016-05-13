@@ -77,7 +77,7 @@
 	var paramKeepWeapons = (parameters['Keep Weapons'] || "3");
 	var arrKeepWeapons = paramKeepWeapons.split(' ');
 	var paramKeepArmors = (parameters['Keep Armors'] || "1 4");
-	var arrKeepArmors = paramKeepArmors	.split(' ');
+	var arrKeepArmors = paramKeepArmors.split(' ');
 
 	//--------------------------------------------------------------------------
 	// Game_Interpreter
