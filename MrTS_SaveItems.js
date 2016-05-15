@@ -33,6 +33,15 @@
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
+* About the Plugin
+* --------------------------------------------------------------------------------
+* Maybe you wanted to have different groups of actors going through story,
+* or maybe the party split up for the next encounter and moving on their own.
+* And that requires the party to remove currently held items, so another party
+* moves on with their story. In that case, this plugin does just that.
+* --------------------------------------------------------------------------------
+* 
+* --------------------------------------------------------------------------------
 * Plugin Commands
 * --------------------------------------------------------------------------------
 * Save items by using following plugin commands that suits items you have:
