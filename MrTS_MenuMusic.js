@@ -46,7 +46,7 @@
 * --------------------------------------------------------------------------------
 * Music for custom scenes (added by other plugins) will require editing the code.
 * Open up this plugin in your favorite text editor and scroll down to: *EDIT HERE*
-* Examples:
+* It has a couple sample entries to look at.
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
