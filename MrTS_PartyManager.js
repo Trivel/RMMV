@@ -44,7 +44,7 @@
 * Credit Mr. Trivel if using this plugin in your project.
 * Free for commercial and non-commercial projects.
 * --------------------------------------------------------------------------------
-* Version 1.0
+* Version 1.1a
 * --------------------------------------------------------------------------------
 *
 * --------------------------------------------------------------------------------
@@ -89,6 +89,9 @@
 * --------------------------------------------------------------------------------
 * Version History
 * --------------------------------------------------------------------------------
+* 1.1a- Fixed Lv being out of window in default resolution.
+* 1.1 - Fixed disappearing members.
+*     - Fixed removing members from party.
 * 1.0 - Release
 */
 
@@ -194,6 +197,17 @@
 
 	Scene_Menu.prototype.commandPartyManager = function() {
 		SceneManager.push(Scene_PartyManager);
+	};
+
+	//--------------------------------------------------------------------------
+	// Game_Actor
+	// 
+
+	var _Game_Actor_initialize = Game_Actor.prototype.initialize;
+	Game_Actor.prototype.initialize = function(actorId) {
+		if (!$gameParty.partyMemberExists(actorId)) $gameParty.removeMemberFromPartyManager(actorId);
+		_Game_Actor_initialize.call(this, actorId);
+		
 	};
 
 	//--------------------------------------------------------------------------
@@ -676,11 +690,7 @@
 	};
 
 	Window_PartyManager_MemberList.prototype.maxItems = function() {
-		var amount = $gameParty.getRequiredPartyMemberAmount();
-		if ($gameParty.getPartyManagerMembers().length > 0)
-			return $gameParty.getPartyManagerMembers().length + (amount === 0 ? 1 : 0);
-		else
-			return 0;
+		return $gameParty.getPartyManagerMembers().length + 1;
 	};
 
 	Window_PartyManager_MemberList.prototype.maxCols = function() {
@@ -785,7 +795,7 @@
 		    var width2 = Math.min(200, width - 180 - this.textPadding());
 		    this.drawActorName(actor, x, y);
 		    this.drawActorClass(actor, x2, y);
-		    this.drawActorLevel(actor, x2+width2+20, y);
+		    this.drawActorLevel(actor, x2+width2+10, y);
 		    this.drawHorzLine(y+lineHeight*1);
 		    this.drawActorFace(actor, x, y + lineHeight *2);
 		    this.drawActorHp(actor, x2, y + lineHeight * 2, width2);
