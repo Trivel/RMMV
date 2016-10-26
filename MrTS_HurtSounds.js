@@ -12,8 +12,7 @@
 * --------------------------------------------------------------------------------
 * Don't remove the header or claim that you wrote this plugin.
 * Credit Mr. Trivel if using this plugin in your project.
-* Free for non-commercial projects.
-* For commercial use contact Mr. Trivel.
+* Free for commercial and  non-commercial projects.
 * --------------------------------------------------------------------------------
 * Version 1.2
 * --------------------------------------------------------------------------------
