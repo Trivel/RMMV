@@ -17,22 +17,22 @@
 * @default Select Savelife
 *
 * @param Line 1
-* @desc What to display in line 1? 'gold' 'time' 'variable [ID]' 'none'
+* @desc What to display in line 1? 'gold' 'time' 'variable [ID]' 'item [ID]' 'none'
 * Default: time
 * @default time
 *
 * @param Line 2
-* @desc What to display in line 2? 'gold' 'time' 'variable [ID]' 'none'
+* @desc What to display in line 2? 'gold' 'time' 'variable [ID]' 'item [ID]' 'none'
 * Default: gold
 * @default gold
 *
 * @param Line 3
-* @desc What to display in line 3? 'gold' 'time' 'variable [ID]' 'none'
+* @desc What to display in line 3? 'gold' 'time' 'variable [ID]' 'item [ID]' 'none'
 * Default: none
 * @default none
 *
 * @param Line 4
-* @desc What to display in line 4? 'gold' 'time' 'variable [ID]' 'none'
+* @desc What to display in line 4? 'gold' 'time' 'variable [ID]' 'item [ID]' 'none'
 * Default: variable 4
 * @default variable 4
 *
@@ -185,7 +185,8 @@
 		var data = [paramLine1, paramLine2, paramLine3, paramLine4];
 		var parsedData = [];
 		for (var i = 0; i < data.length; i++) {
-			switch (data[i].split(' ')[0])
+			var row = data[i].split(' ');
+			switch (row[0])
 			{
 				case 'gold':
 				{
@@ -197,7 +198,14 @@
 				} break;
 				case 'variable':
 				{
-					parsedData[i] = $gameVariables.value(Number(data[i].split(' ')[1]));
+					parsedData[i] = $gameVariables.value(Number(row[1]));
+				} break;
+				case 'item':
+				{
+					if($gameParty._items.hasOwnProperty(row[1]))
+						parsedData[i] = ' × ' + $gameParty._items[row[1]];
+					else
+						parsedData[i] = ' × 0';
 				} break;
 				default:
 				{
