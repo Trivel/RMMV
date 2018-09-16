@@ -184,36 +184,36 @@
 		var info = _DataManager_makeSavefileInfo();
 		var data = [paramLine1, paramLine2, paramLine3, paramLine4];
 		var parsedData = [];
-        for (var i = 0; i < data.length; i++) {
-            var row = data[i].split(' ');
-            switch (row[0])
-            {
-                case 'gold':
-                {
-                    parsedData[i] = $gameParty.gold();
-                } break;
-                case 'time':
-                {
-                    parsedData[i] = $gameSystem.playtimeText();
-                } break;
-                case 'variable':
-                {
-                    parsedData[i] = $gameVariables.value(Number(row[1]));
-                } break;
-                case 'item':
-                {
-                    if($gameParty._items.hasOwnProperty(row[1]))
-                        parsedData[i] = ' × ' + $gameParty._items[row[1]];
-                    else
-                        parsedData[i] = ' × 0';
-                } break;
-                default:
-                {
-                    parsedData[i] = '';
-                } break;
-
-            }
-        }
+		for (var i = 0; i < data.length; i++) {
+			var row = data[i].split(' ');
+			switch (row[0])
+			{
+				case 'gold':
+				{
+					parsedData[i] = $gameParty.gold();
+				} break;
+				case 'time':
+				{
+					parsedData[i] = $gameSystem.playtimeText();
+				} break;
+				case 'variable':
+				{
+					parsedData[i] = $gameVariables.value(Number(row[1]));
+				} break;
+				case 'item':
+				{
+					if($gameParty._items.hasOwnProperty(row[1]))
+						parsedData[i] = ' × ' + $gameParty._items[row[1]];
+					else
+						parsedData[i] = ' × 0';
+				} break;
+				default:
+				{
+					parsedData[i] = '';
+				} break;
+				
+			}
+		}
 		info.line1 = parsedData[0];
 		info.line2 = parsedData[1];
 		info.line3 = parsedData[2];
